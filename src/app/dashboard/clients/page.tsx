@@ -6,12 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientChip } from "@/features/publishing/components/client-switcher";
-import { SAMPLE_CLIENTS } from "@/lib/sample-data";
+import { loadClients } from "@/lib/services/client-service";
 import { listConnectionsForClient } from "@/lib/services/connection-service";
 
+export const dynamic = "force-dynamic";
+
 export default async function ClientsPage() {
+  const clients = await loadClients();
   const rows = await Promise.all(
-    SAMPLE_CLIENTS.map(async (client) => ({
+    clients.map(async (client) => ({
       client,
       connections: await listConnectionsForClient(client.id),
     })),

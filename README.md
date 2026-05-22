@@ -136,17 +136,32 @@ Firebase in Vercel, the demo button disappears in production.
 | Session cookies (HMAC) | ✅ | |
 | Middleware route gating | ✅ | |
 | Firebase ID-token verification | ✅ (when env vars set) | demo mode when not |
-| Role bootstrap from `AGENCY_OWNERS` / `AGENCY_ADMINS` | ✅ | |
+| Role lookup via `agencyMembers` (Firestore) | ✅ (when Firestore configured) | env allowlist fallback |
 | Invite token signing + expiry + status | ✅ | |
-| Invite storage | | in-memory map (swap to Firestore `clientInvites`) |
+| `clientInvites` storage | ✅ (Firestore) | in-memory fallback when Firestore unavailable |
 | Meta OAuth `state` signing + verification | ✅ | |
 | Meta code exchange + Page/IG enumeration | ✅ (when keys set) | clearly-labeled stub when not |
-| `socialConnections` storage | | in-memory map (swap to Firestore) |
-| Audit log | | in-memory ring (swap to Firestore `auditLogs`) |
-| `socialPosts` storage | | in-memory only (existing v1 stub) |
+| `socialConnections` storage | ✅ (Firestore) | in-memory fallback |
+| `auditLogs` writes | ✅ (Firestore, best-effort) | in-memory ring fallback |
+| `clients` reads | ✅ (Firestore, with sample-data fallback) | sample data |
+| `socialPosts` storage | | in-memory only (next milestone) |
 
-The in-memory repositories in `src/lib/repositories/*` are deliberately
-shaped to be one-file swaps to Firestore drivers.
+Every Firestore-backed surface degrades gracefully to in-memory when the
+admin SDK isn't configured — local dev and unconfigured Vercel previews
+still work without errors.
+
+## Firestore Security Rules
+
+A starter ruleset lives at `firestore.rules`. The app reads/writes via the
+Firebase Admin SDK on the server, which bypasses rules by design. The
+rules in the file therefore deny-by-default for browser-side access — they
+exist as defense in depth in case any UI ever queries Firestore directly.
+
+Deploy with:
+
+```bash
+firebase deploy --only firestore:rules
+```
 
 ## Project layout (additions)
 

@@ -7,7 +7,7 @@ import {
   listInvites,
   type CreateInviteInput,
 } from "@/lib/services/invite-service";
-import { getClient } from "@/lib/sample-data";
+import { loadClient } from "@/lib/services/client-service";
 
 export const runtime = "nodejs";
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   if (!body.clientId) {
     return NextResponse.json({ error: "clientId is required" }, { status: 400 });
   }
-  if (!getClient(body.clientId)) {
+  if (!(await loadClient(body.clientId))) {
     return NextResponse.json({ error: "Unknown client" }, { status: 404 });
   }
 

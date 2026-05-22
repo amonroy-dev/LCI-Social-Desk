@@ -3,7 +3,7 @@ import { AlertTriangle, CheckCircle2, Lock, ShieldCheck, TimerOff } from "lucide
 
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { getClient } from "@/lib/sample-data";
+import { loadClient } from "@/lib/services/client-service";
 import {
   markInviteOpened,
   resolveInviteToken,
@@ -43,8 +43,9 @@ export default async function ConnectPage({ params, searchParams }: PageProps) {
   }
 
   if (resolved.status === "expired") {
+    const expiredClient = (await loadClient(resolved.invite.clientId)) ?? undefined;
     return (
-      <Shell client={getClient(resolved.invite.clientId)}>
+      <Shell client={expiredClient}>
         <StatusCard
           tone="expired"
           title="This invite has expired"
@@ -55,8 +56,9 @@ export default async function ConnectPage({ params, searchParams }: PageProps) {
   }
 
   if (resolved.status === "revoked") {
+    const revokedClient = (await loadClient(resolved.invite.clientId)) ?? undefined;
     return (
-      <Shell client={getClient(resolved.invite.clientId)}>
+      <Shell client={revokedClient}>
         <StatusCard
           tone="invalid"
           title="This invite has been revoked"
@@ -70,7 +72,7 @@ export default async function ConnectPage({ params, searchParams }: PageProps) {
   // status read-out so the client can confirm what's connected.
   await markInviteOpened(resolved.invite.id);
 
-  const client = getClient(resolved.invite.clientId);
+  const client = (await loadClient(resolved.invite.clientId)) ?? undefined;
   const connections = client
     ? await listConnectionsForClient(client.id)
     : [];
@@ -159,7 +161,7 @@ function Shell({
   client,
 }: {
   children: React.ReactNode;
-  client?: Client;
+  client?: Client | undefined;
 }) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10">

@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { recordAudit } from "@/lib/services/audit-service";
 import { issueSessionToken, SESSION_COOKIE } from "@/lib/auth/session";
 import { resolveRoleForEmail } from "@/lib/auth/roles";
+import { resolveRoleForVerifiedUser } from "@/lib/services/agency-member-service";
 import { verifyFirebaseIdToken } from "@/lib/firebase/admin";
 import {
   isDemoModeEnabled,
@@ -41,7 +42,23 @@ export async function POST(req: NextRequest) {
         { status: 401 },
       );
     }
-    const role = resolveRoleForEmail(user.email);
+
+    let role;
+    try {
+      role = await resolveRoleForVerifiedUser({
+        uid: user.uid,
+        email: user.email,
+        fullName: user.name,
+        avatarUrl: user.picture ?? null,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "agencyMembers lookup failed.";
+      return NextResponse.json({ error: message }, { status: 503 });
+    }
+
     const { token, expiresAt } = await issueSessionToken({
       uid: user.uid,
       email: user.email,

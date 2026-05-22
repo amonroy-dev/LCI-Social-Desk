@@ -2,7 +2,7 @@ import "server-only";
 
 import { inviteRepository } from "@/lib/repositories/invite-repository";
 import { recordAudit } from "@/lib/services/audit-service";
-import { getClient } from "@/lib/sample-data";
+import { loadClient } from "@/lib/services/client-service";
 import type {
   ClientInvite,
   ClientInviteStatus,
@@ -102,7 +102,7 @@ export async function createInvite(
   input: CreateInviteInput,
   actor: SessionUser,
 ): Promise<CreatedInvite> {
-  const client = getClient(input.clientId);
+  const client = await loadClient(input.clientId);
   if (!client) {
     throw new Error(`Unknown client: ${input.clientId}`);
   }
