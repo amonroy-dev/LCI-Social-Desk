@@ -1,7 +1,13 @@
 node_modules
 .next
 out
-.env*.local
+
+# Environment files — never commit secrets. .env.example IS committed
+# (it has placeholders only); everything else stays local.
+.env
+.env.*
+!.env.example
+
 .DS_Store
 *.log
 next-env.d.ts
