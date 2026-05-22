@@ -1,9 +1,13 @@
-import type { Client, ContentTag, NetworkId, SocialConnection } from "./types";
+import type { Client, ContentTag, NetworkId } from "./types";
 
+/**
+ * Networks shown in the composer. LinkedIn is intentionally hidden in this
+ * phase — the placeholder remains in the type union so existing previews
+ * keep compiling, but the network is not surfaced as a toggle.
+ */
 export const NETWORKS: { id: NetworkId; label: string }[] = [
   { id: "facebook", label: "Facebook" },
   { id: "instagram", label: "Instagram" },
-  { id: "linkedin", label: "LinkedIn" },
 ];
 
 export const CONTENT_TAGS: ContentTag[] = [
@@ -44,39 +48,6 @@ export const SAMPLE_CLIENTS: Client[] = [
     accent: "bg-emerald-100 text-emerald-700",
   },
 ];
-
-export const SAMPLE_CONNECTIONS: SocialConnection[] = SAMPLE_CLIENTS.flatMap(
-  (client): SocialConnection[] => [
-    {
-      id: `${client.id}-facebook`,
-      clientId: client.id,
-      network: "facebook",
-      handle: `@${client.id.replace(/-/g, ".")}`,
-      displayName: client.name,
-      connected: true,
-    },
-    {
-      id: `${client.id}-instagram`,
-      clientId: client.id,
-      network: "instagram",
-      handle: `@${client.id.replace(/-/g, ".")}`,
-      displayName: client.name,
-      connected: true,
-    },
-    {
-      id: `${client.id}-linkedin`,
-      clientId: client.id,
-      network: "linkedin",
-      handle: `linkedin.com/company/${client.id}`,
-      displayName: client.name,
-      connected: client.id !== "harbor-wellness",
-    },
-  ],
-);
-
-export function getConnectionsForClient(clientId: string) {
-  return SAMPLE_CONNECTIONS.filter((c) => c.clientId === clientId);
-}
 
 export function getClient(clientId: string): Client | undefined {
   return SAMPLE_CLIENTS.find((c) => c.id === clientId);

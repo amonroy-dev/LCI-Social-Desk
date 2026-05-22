@@ -41,7 +41,7 @@ function makeInitialDraft(): SocialPostDraft {
   return {
     id: "draft_local",
     clientId: SAMPLE_CLIENTS[0].id,
-    networks: ["facebook", "instagram", "linkedin"],
+    networks: ["facebook", "instagram"],
     caption: "",
     firstComment: "",
     tags: [],

@@ -20,6 +20,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { UserMenu } from "@/features/auth/user-menu";
+import type { SessionUser } from "@/lib/types";
 
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -56,7 +58,11 @@ const NAV_ITEMS = [
   },
 ] as const;
 
-export function Sidebar() {
+interface SidebarProps {
+  session: SessionUser;
+}
+
+export function Sidebar({ session }: SidebarProps) {
   const pathname = usePathname() ?? "";
 
   return (
@@ -110,12 +116,7 @@ export function Sidebar() {
       </TooltipProvider>
 
       <div className="flex flex-col items-center gap-2 border-t border-white/5 px-2 py-3">
-        <div
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-white/8 text-[10.5px] font-semibold uppercase tracking-wide text-white ring-1 ring-white/10"
-          title="Agency Team"
-        >
-          AT
-        </div>
+        <UserMenu session={session} variant="sidebar" />
       </div>
     </aside>
   );

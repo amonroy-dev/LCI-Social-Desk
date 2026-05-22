@@ -8,38 +8,114 @@ export type AuditEventType =
   | "draft.saved"
   | "post.scheduled"
   | "post.published"
-  | "post.simulated";
+  | "post.simulated"
+  | "auth.signed_in"
+  | "auth.signed_out"
+  | "invite.created"
+  | "invite.opened"
+  | "invite.used"
+  | "invite.expired"
+  | "connection.started"
+  | "connection.completed"
+  | "connection.failed"
+  | "connection.reconnected"
+  | "connection.disconnected";
+
+export type AgencyRole = "owner" | "admin" | "member";
+
+export interface AgencyUser {
+  uid: string;
+  fullName: string;
+  email: string;
+  role: AgencyRole;
+  active: boolean;
+  /** ISO timestamp. */
+  createdAt: string;
+  /** ISO timestamp. */
+  lastLoginAt: string | null;
+  avatarUrl?: string | null;
+}
+
+export interface SessionUser {
+  uid: string;
+  email: string;
+  name: string;
+  role: AgencyRole;
+  /** Whether this session was issued via demo mode (no Firebase). */
+  demo?: boolean;
+}
 
 export interface Client {
   id: string;
   name: string;
-  /** Short identifier shown in compact controls (e.g. "NSD"). */
   shortCode: string;
-  /** Industry or vertical, used for internal context. */
   industry: string;
-  /** Soft accent color (Tailwind class fragment) for the avatar chip. */
   accent: string;
 }
+
+/** The two networks LCI Social Desk supports in this phase. LinkedIn is reserved. */
+export type SupportedNetwork = "facebook" | "instagram";
+
+export type SocialConnectionStatus =
+  | "pending"
+  | "connected"
+  | "expired"
+  | "revoked"
+  | "error";
 
 export interface SocialConnection {
   id: string;
   clientId: string;
-  network: NetworkId;
-  /** Handle as it appears on the network (e.g. @northshore.dental). */
-  handle: string;
-  /** Display name that appears in previews. */
-  displayName: string;
-  /** Whether the connection is currently authorized for publishing. */
-  connected: boolean;
+  /** "facebook" or "instagram" — both flow through Meta OAuth. */
+  platform: SupportedNetwork;
+  /** Provider-side identifier (Page ID for FB, IG Business account ID). */
+  accountId: string | null;
+  accountName: string | null;
+  status: SocialConnectionStatus;
+  scopes: string[];
+  /** uid of the agency user who initiated the connection (when known). */
+  connectedBy: string | null;
+  /** ISO timestamp set when status becomes "connected". */
+  connectedAt: string | null;
+  /** ISO timestamp for token expiry, when provided by Meta. */
+  expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  /** True when scopes + token are sufficient to publish. */
+  publishingReady: boolean;
+  /** Internal note shown in the dashboard. */
+  note?: string | null;
+}
+
+export type ClientInviteStatus = "pending" | "opened" | "used" | "expired" | "revoked";
+
+export interface ClientInvite {
+  id: string;
+  clientId: string;
+  /** Email of the client contact who should open the invite. Optional. */
+  email: string | null;
+  /** Display name of the client contact. Optional. */
+  contactName: string | null;
+  /** Networks the agency is asking the client to connect. */
+  allowedNetworks: SupportedNetwork[];
+  status: ClientInviteStatus;
+  /** ISO timestamp. */
+  expiresAt: string;
+  /** ISO timestamp. */
+  createdAt: string;
+  /** Agency user uid. */
+  createdBy: string;
+  /** ISO timestamp. */
+  usedAt: string | null;
+  /** ISO timestamp the link was first opened. */
+  openedAt: string | null;
 }
 
 export interface MediaAsset {
   id: string;
-  /** Object URL or remote URL for preview rendering. */
   url: string;
   name: string;
   size: number;
-  /** "image" | "video" — kept narrow for v1. */
   kind: "image" | "video";
 }
 
@@ -51,9 +127,7 @@ export type ContentTag =
   | "Urgent";
 
 export interface ScheduleState {
-  /** ISO date string (yyyy-mm-dd). */
   date: string | null;
-  /** 24h time string (HH:mm). */
   time: string | null;
 }
 
@@ -68,7 +142,6 @@ export interface SocialPostDraft {
   isDraft: boolean;
   schedule: ScheduleState;
   status: PostStatus;
-  /** ISO timestamp string. */
   updatedAt: string;
 }
 
@@ -76,6 +149,12 @@ export interface AuditLogEvent {
   id: string;
   type: AuditEventType;
   message: string;
-  /** ISO timestamp string. */
+  /** ISO timestamp. */
   at: string;
+  /** Actor uid, when known. */
+  actorUid?: string | null;
+  /** Optional client this event relates to. */
+  clientId?: string | null;
+  /** Arbitrary structured payload. */
+  meta?: Record<string, unknown>;
 }

@@ -1,5 +1,11 @@
 import { redirect } from "next/navigation";
 
-export default function HomePage() {
-  redirect("/dashboard/publishing/new");
+import { getCurrentSession } from "@/lib/auth/server";
+
+export default async function HomePage() {
+  const session = await getCurrentSession();
+  if (session) {
+    redirect("/dashboard/publishing/new");
+  }
+  redirect("/sign-in");
 }

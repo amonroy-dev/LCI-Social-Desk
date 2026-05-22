@@ -1,146 +1,217 @@
 # LCI Social Desk
 
 > Internal social publishing dashboard for agency teams managing
-> ~10–20 client accounts across Facebook, Instagram, and LinkedIn.
+> ~10–20 client accounts across Facebook and Instagram (LinkedIn deferred).
 
-LCI Social Desk is a private, internal-use workspace for composing,
-previewing, scheduling, and (eventually) publishing social content on behalf
-of client accounts. It is **not** a public SaaS product, marketing site, or
-generic admin template — it is a serious internal agency tool.
+LCI Social Desk is a private agency workspace for composing, previewing,
+scheduling, and (eventually) publishing social content for client accounts.
+It is **not** a public SaaS product, marketing site, or generic admin
+template — it's a serious internal tool.
 
-This repository contains the first core experience of the product: the
-**New Draft** publishing workspace at `/dashboard/publishing/new`.
+## Current scope
 
----
+- **Composer** at `/dashboard/publishing/new` — client switcher, network
+  toggles (Facebook + Instagram), caption editor, media uploader,
+  collapsible First Comment / Workflows / Tags panels, live preview cards,
+  sticky Save Draft / Schedule / Post Now action bar.
+- **Authentication** for agency team members via Firebase (Google) with a
+  signed HTTP-only session cookie and Edge-runtime middleware route
+  protection. A clearly-labeled demo sign-in keeps the app usable when
+  Firebase isn't configured yet.
+- **Role model** (`owner` / `admin` / `member`) bootstrapped from env-var
+  allowlists until `agencyMembers` is wired to Firestore.
+- **Client invite flow**: agency users mint signed, expiring invite tokens
+  from `/dashboard/clients/<id>/connections`. Clients open `/connect/<token>`
+  on a public, branded page that does **not** require a dashboard account.
+- **Meta OAuth scaffolding** at `/api/oauth/meta/start` and
+  `/api/oauth/meta/callback`. Connects Facebook Pages and Instagram
+  Business/Professional accounts through a single Meta authorization. Falls
+  back to a labeled simulated exchange if `META_APP_ID` / `META_APP_SECRET`
+  aren't configured.
+- **Dashboard connection management** at
+  `/dashboard/clients/<id>/connections` with per-network status, last
+  updated, who connected, scopes, publishing-ready badge, reconnect, and a
+  disconnect placeholder gated by role.
+- **Audit log** stub (`auditLogs`) recording sign-in, invite create/open,
+  connection start/complete/revoke, draft save/schedule/publish.
 
 ## Tech stack
 
-- [Next.js 15](https://nextjs.org) (App Router)
-- TypeScript
-- Tailwind CSS 3
-- shadcn/ui-style primitives (built on Radix)
-- [lucide-react](https://lucide.dev) icons
+- Next.js 15 (App Router) + TypeScript
+- Tailwind CSS 3 + shadcn/ui-style primitives on Radix
+- lucide-react icons
+- Firebase Auth (browser) + Firebase Admin (server, for ID-token verification)
+- Web Crypto for all HMAC signing (sessions, invites, OAuth state) — works
+  on the Edge runtime so middleware doesn't pull in firebase-admin.
 
-## Getting started
+## Routes
+
+### Internal (agency, gated by middleware)
+
+| Path | Purpose |
+| --- | --- |
+| `/dashboard` | Workspace overview |
+| `/dashboard/publishing/new` | New Draft composer |
+| `/dashboard/clients` | Client roster + connection status |
+| `/dashboard/clients/[clientId]/connections` | Per-client connection management + invite generator |
+| `/dashboard/calendar`, `/dashboard/media`, `/dashboard/analytics`, `/dashboard/settings` | Placeholders |
+
+### Public
+
+| Path | Purpose |
+| --- | --- |
+| `/sign-in` | Agency sign-in (Google + optional demo) |
+| `/connect/[token]` | Client-facing secure connection page |
+| `/api/auth/session` | `POST` create session from Firebase ID token or demo payload; `DELETE` clear |
+| `/api/invites` | `POST` create invite (auth required); `GET` list |
+| `/api/oauth/meta/start` | Begin Meta OAuth handoff for an invite token |
+| `/api/oauth/meta/callback` | Exchange code, persist `socialConnections`, mark invite used |
+| `/api/connections/[clientId]/[platform]` | `DELETE` revoke (admin+) |
+
+## Required environment variables
+
+Set these in Vercel Project Settings → Environment Variables.
+
+### Always required for real auth and OAuth
 
 ```bash
-npm install
-npm run dev
+# Session signing (HS256). Generate with `openssl rand -hex 32`.
+SESSION_SECRET=
+
+# Signing secret for invite tokens (falls back to SESSION_SECRET if unset).
+INVITE_TOKEN_SECRET=
+
+# Public base URL used for invite links (e.g. https://lci-social-desk.vercel.app).
+NEXT_PUBLIC_APP_URL=
 ```
 
-Then open [http://localhost:3000/dashboard/publishing/new](http://localhost:3000/dashboard/publishing/new).
+### Firebase Authentication
 
-The root route (`/`) redirects to the publishing workspace.
+```bash
+# Client SDK (NEXT_PUBLIC_ values are exposed to the browser by design).
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_APP_ID=1:000:web:abc
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 
-### Scripts
+# Admin SDK service account (server only). FIREBASE_PRIVATE_KEY may contain
+# literal "\n" sequences from a service-account JSON — they're auto-unescaped.
+FIREBASE_PROJECT_ID=your-project
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xyz@your-project.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
-- `npm run dev` — start the dev server
-- `npm run build` — build for production
-- `npm run start` — run the production build
-- `npm run lint` — Next.js lint
-- `npm run typecheck` — TypeScript no-emit check
+# Comma-separated allowlists used to bootstrap roles for known users until
+# agencyMembers is wired to Firestore. Anyone signing in is `member` by default.
+AGENCY_OWNERS=owner@youragency.com,partner@youragency.com
+AGENCY_ADMINS=admin@youragency.com
+```
 
-## Project layout
+### Meta (Facebook + Instagram) OAuth
+
+```bash
+META_APP_ID=
+META_APP_SECRET=
+META_REDIRECT_URI=https://lci-social-desk.vercel.app/api/oauth/meta/callback
+META_SCOPES=pages_show_list,pages_read_engagement,pages_manage_posts,instagram_basic,instagram_content_publish,business_management
+META_STATE_SECRET=
+```
+
+### Optional
+
+```bash
+NEXT_PUBLIC_AUTH_MODE=firebase     # or "demo" to force-enable demo sign-in
+NEXT_PUBLIC_SUPPORT_EMAIL=hello@lci.agency
+```
+
+If `NEXT_PUBLIC_AUTH_MODE` is unset, demo mode auto-enables only when the
+`NEXT_PUBLIC_FIREBASE_*` vars are missing — so the moment you configure
+Firebase in Vercel, the demo button disappears in production.
+
+## What's real vs simulated
+
+| Behavior | Real | Simulated |
+| --- | --- | --- |
+| Session cookies (HMAC) | ✅ | |
+| Middleware route gating | ✅ | |
+| Firebase ID-token verification | ✅ (when env vars set) | demo mode when not |
+| Role bootstrap from `AGENCY_OWNERS` / `AGENCY_ADMINS` | ✅ | |
+| Invite token signing + expiry + status | ✅ | |
+| Invite storage | | in-memory map (swap to Firestore `clientInvites`) |
+| Meta OAuth `state` signing + verification | ✅ | |
+| Meta code exchange + Page/IG enumeration | ✅ (when keys set) | clearly-labeled stub when not |
+| `socialConnections` storage | | in-memory map (swap to Firestore) |
+| Audit log | | in-memory ring (swap to Firestore `auditLogs`) |
+| `socialPosts` storage | | in-memory only (existing v1 stub) |
+
+The in-memory repositories in `src/lib/repositories/*` are deliberately
+shaped to be one-file swaps to Firestore drivers.
+
+## Project layout (additions)
 
 ```
 src/
-  app/
-    layout.tsx                # Root layout (fonts, metadata, body)
-    page.tsx                  # Redirects to /dashboard/publishing/new
-    globals.css               # Tailwind layers + design tokens
-    dashboard/
-      layout.tsx              # App shell (sidebar + main column)
-      page.tsx                # Workspace overview placeholder
-      publishing/
-        page.tsx              # Redirects to /new
-        new/page.tsx          # New Draft workspace (primary screen)
-      clients/page.tsx        # Light placeholder
-      calendar/page.tsx       # Light placeholder
-      media/page.tsx          # Light placeholder
-      analytics/page.tsx      # Light placeholder
-      settings/page.tsx       # Light placeholder
-  components/
-    shell/                    # AppShell, Sidebar, TopBar
-    ui/                       # shadcn-style primitives (Button, Card, …)
-    network/                  # Original network glyphs (FB/IG/LI)
-  features/
-    publishing/
-      publishing-workspace.tsx
-      state.ts                # Composer reducer + useComposer hook
-      components/
-        client-switcher.tsx
-        composer-card.tsx
-        composer-toolbar.tsx
-        media-uploader.tsx
-        network-toggles.tsx
-        first-comment-panel.tsx
-        workflows-panel.tsx
-        tags-panel.tsx
-        preview-panel.tsx
-        preview/
-          preview-shared.tsx
-          facebook-preview.tsx
-          instagram-preview.tsx
-          linkedin-preview.tsx
-        schedule-dialog.tsx
-        action-bar.tsx
-        collapsible-panel.tsx
+  middleware.ts                          # Edge gate for /dashboard
   lib/
-    types.ts                  # Core domain types
-    sample-data.ts            # Sample clients/connections/tags
-    services/post-service.ts  # Stubbed save / schedule / publish
-    utils.ts                  # cn, initialsOf, formatPreviewTimestamp
+    auth/
+      session.ts                         # HMAC session cookie sign/verify
+      server.ts                          # getCurrentSession / requireSession
+      roles.ts                           # role rank + env-driven bootstrap
+    firebase/
+      config.ts                          # env-driven capability detection
+      client.ts                          # Firebase JS init (lazy)
+      admin.ts                           # Firebase Admin init (lazy)
+    repositories/
+      invite-repository.ts               # in-memory clientInvites
+      connection-repository.ts           # in-memory socialConnections
+    services/
+      audit-service.ts
+      invite-service.ts                  # token signing + lifecycle
+      connection-service.ts
+      meta-oauth.ts                      # auth URL + code exchange + state
+  app/
+    sign-in/page.tsx
+    connect/
+      layout.tsx
+      [token]/page.tsx
+    api/
+      auth/session/route.ts
+      invites/route.ts
+      oauth/meta/start/route.ts
+      oauth/meta/callback/route.ts
+      connections/[clientId]/[platform]/route.ts
+    dashboard/
+      clients/[clientId]/connections/page.tsx
+  features/
+    auth/
+      sign-in-form.tsx
+      user-menu.tsx
+    connect/
+      connection-buttons.tsx
+    connections/
+      connection-status-card.tsx
+      connections-view.tsx
+      invite-generator.tsx
 ```
 
-## Domain model
+## Next best steps (in suggested order)
 
-The app is designed so it can be wired to Firestore later with minimal
-changes. The core entities live in `src/lib/types.ts`:
-
-- `Client`
-- `SocialConnection`
-- `SocialPostDraft`
-- `MediaAsset`
-- `AuditLogEvent`
-- `NetworkId`, `PostStatus`, `ContentTag`, `ScheduleState`
-
-These map directly to the planned Firestore collections:
-
-- `clients`
-- `socialConnections`
-- `socialPosts`
-- `mediaAssets`
-- `auditLogs`
-
-### Stubbed behavior
-
-- `src/lib/services/post-service.ts` simulates `saveDraft`, `schedulePost`,
-  and `publishPost` with short artificial delays. Each returns a normalized
-  `SocialPostDraft` plus an `AuditLogEvent`. Replace the bodies with
-  Firestore reads/writes and the rest of the app should keep working.
-- `MediaUploader` uses `URL.createObjectURL` so attachments preview locally
-  without an upload pipeline.
-- `publishPost` falls back to a `"simulated"` status unless the
-  `NEXT_PUBLIC_ENABLE_PROVIDER_PUBLISH=true` env var is set, at which point
-  it returns `"published"` so the action chain is exercised end-to-end.
-
-## What is intentionally _not_ included in v1
-
-- Authentication / SSO bootstrapping
-- Multi-tenant onboarding
-- A polished mobile-first redesign (desktop-first only)
-- A complex approval engine
-- A deep analytics dashboard
-- Real provider publishing integrations
-- AI Assist rewrites (UI is scaffolded; nothing is wired)
-
-## Next best steps
-
-1. Wire the `post-service` stubs to Firestore (`socialPosts`, `auditLogs`).
-2. Replace `sample-data.ts` with live `clients` / `socialConnections`
-   queries.
-3. Move media uploads to Firebase Storage (or equivalent) and persist
-   resulting `MediaAsset` entries to `mediaAssets`.
-4. Add provider adapters per network (Facebook Graph, Instagram Graph,
-   LinkedIn Marketing) behind a single `publishPost` interface.
-5. Build the Calendar surface against the same `SocialPostDraft` data.
+1. **Firestore swap.** Implement the same interfaces over Firestore for
+   `invite-repository.ts`, `connection-repository.ts`, and a new
+   `audit-repository.ts`. No call-site changes required.
+2. **`users` / `agencyMembers` collection.** Replace
+   `resolveRoleForEmail` with a Firestore lookup, and populate
+   `agencyMembers` on first sign-in. Keep the env-driven allowlist as a
+   bootstrap-time fallback for the very first owner.
+3. **Email-link sign-in.** Optional second auth method using
+   `sendSignInLinkToEmail` + `signInWithEmailLink` on top of the same
+   session cookie pipeline.
+4. **Meta App review.** Move scopes through Meta's app review for
+   `pages_manage_posts` and `instagram_content_publish`. Test the real
+   `/api/oauth/meta/callback` once approved.
+5. **Connection refresh job.** Schedule a server task to refresh
+   long-lived Meta tokens before `expiresAt` and flip the `status` to
+   `expired` proactively.
+6. **Re-enable LinkedIn** when ready: the type union and previews are
+   already in place, just hidden from the composer toggles in this phase.
