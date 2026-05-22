@@ -68,6 +68,28 @@ template — it's a serious internal tool.
 | `/api/oauth/meta/callback` | Exchange code, persist `socialConnections`, mark invite used |
 | `/api/connections/[clientId]/[platform]` | `DELETE` revoke (admin+) |
 
+## Environment files
+
+A `.env.example` template lives at the repo root. To set up locally:
+
+```bash
+cp .env.example .env.local
+# Fill in real values in .env.local — it's git-ignored.
+```
+
+For Vercel: paste the same keys into **Project Settings → Environment
+Variables** (do not commit production secrets to `.env.local`).
+
+### Which values are actually secret?
+
+- **`NEXT_PUBLIC_FIREBASE_*`** — *not* secret. These are identifiers that
+  Next.js bundles into the client JS by design. Security comes from the
+  Firebase Console **Authorized domains** list (Authentication → Settings)
+  and from Firestore Security Rules — not from hiding these values.
+- **`FIREBASE_PRIVATE_KEY`**, **`FIREBASE_CLIENT_EMAIL`**, **`META_APP_SECRET`**,
+  **`SESSION_SECRET`**, **`INVITE_TOKEN_SECRET`**, **`META_STATE_SECRET`** — these
+  are real secrets. Keep them server-only and never commit them.
+
 ## Required environment variables
 
 Set these in Vercel Project Settings → Environment Variables.
