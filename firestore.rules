@@ -1,0 +1,57 @@
+// =============================================================================
+// LCI Social Desk — Firestore Security Rules (starter)
+// =============================================================================
+//
+// The app uses the Firebase Admin SDK on the server for every Firestore
+// read/write. The Admin SDK bypasses these rules by design, so the rules
+// below exist to LOCK DOWN client-side access in case anything in the
+// codebase ever queries Firestore directly from the browser. Today nothing
+// in /src does — but enforcing deny-by-default here keeps that property.
+//
+// Deploy with:  firebase deploy --only firestore:rules
+// =============================================================================
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Authenticated agency member helper.
+    function isAgencyMember() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/agencyMembers/$(request.auth.uid));
+    }
+
+    function isOwnerOrAdmin() {
+      let role = get(/databases/$(database)/documents/agencyMembers/$(request.auth.uid)).data.role;
+      return role == 'owner' || role == 'admin';
+    }
+
+    // Members can read their own member document; only owners/admins can
+    // create or modify other member documents.
+    match /agencyMembers/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || isAgencyMember());
+      allow write: if request.auth != null && isOwnerOrAdmin();
+    }
+
+    // Clients are read-only for agency members from the browser. All writes
+    // go through the Admin SDK (which bypasses rules).
+    match /clients/{clientId} {
+      allow read: if isAgencyMember();
+      allow write: if false;
+    }
+
+    // Invites, connections, audit logs, posts, media: server-managed only.
+    // Client-side reads of these would leak data across clients, so deny.
+    match /clientInvites/{inviteId}  { allow read, write: if false; }
+    match /socialConnections/{id}    { allow read, write: if false; }
+    match /socialPosts/{postId}      { allow read, write: if false; }
+    match /mediaAssets/{assetId}     { allow read, write: if false; }
+    match /auditLogs/{eventId}       { allow read, write: if false; }
+
+    // Default deny for any future collection.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

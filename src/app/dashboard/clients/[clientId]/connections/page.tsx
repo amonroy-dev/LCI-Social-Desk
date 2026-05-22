@@ -9,7 +9,7 @@ import { ClientChip } from "@/features/publishing/components/client-switcher";
 import { ConnectionsView } from "@/features/connections/connections-view";
 import { InviteGenerator } from "@/features/connections/invite-generator";
 import { requireSession } from "@/lib/auth/server";
-import { getClient } from "@/lib/sample-data";
+import { loadClient } from "@/lib/services/client-service";
 import { createInvite, getAppBaseUrl } from "@/lib/services/invite-service";
 import { listConnectionsForClient } from "@/lib/services/connection-service";
 import { isMetaConfigured } from "@/lib/services/meta-oauth";
@@ -23,7 +23,7 @@ interface PageProps {
 export default async function ClientConnectionsPage({ params }: PageProps) {
   const session = await requireSession();
   const { clientId } = await params;
-  const client = getClient(clientId);
+  const client = await loadClient(clientId);
   if (!client) notFound();
 
   const connections = await listConnectionsForClient(client.id);

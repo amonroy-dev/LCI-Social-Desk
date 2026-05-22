@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { getClient } from "@/lib/sample-data";
+import { loadClient } from "@/lib/services/client-service";
 import {
   exchangeCodeForTokens,
   readMetaConfig,
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     return redirectToConnect(req, invite.id, "error");
   }
 
-  const client = getClient(invite.clientId);
+  const client = await loadClient(invite.clientId);
   const result = await exchangeCodeForTokens(code, client?.name ?? invite.clientId);
 
   const expiresAt = result.expiresInSeconds

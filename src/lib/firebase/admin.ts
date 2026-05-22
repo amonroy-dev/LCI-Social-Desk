@@ -8,6 +8,7 @@ import {
   type App,
 } from "firebase-admin/app";
 import { getAuth, type Auth } from "firebase-admin/auth";
+import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
 import { readAdminConfig } from "./config";
 
@@ -35,6 +36,24 @@ function ensureApp(): App | null {
 export function getAdminAuth(): Auth | null {
   const app = ensureApp();
   return app ? getAuth(app) : null;
+}
+
+let cachedFirestore: Firestore | null = null;
+
+export function getAdminFirestore(): Firestore | null {
+  if (cachedFirestore) return cachedFirestore;
+  const app = ensureApp();
+  if (!app) return null;
+  cachedFirestore = getFirestore(app);
+  try {
+    // Ignore properties not registered in TypeScript types — Firestore safely
+    // ignores already-initialized settings on subsequent calls.
+    cachedFirestore.settings({ ignoreUndefinedProperties: true });
+  } catch {
+    // settings() can only be called once per Firestore instance. After the
+    // first call all subsequent ones throw — which is fine here.
+  }
+  return cachedFirestore;
 }
 
 export interface VerifiedFirebaseUser {
