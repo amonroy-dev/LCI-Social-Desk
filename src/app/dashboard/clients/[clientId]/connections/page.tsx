@@ -13,6 +13,7 @@ import { loadClient } from "@/lib/services/client-service";
 import { createInvite, getAppBaseUrl } from "@/lib/services/invite-service";
 import { listConnectionsForClient } from "@/lib/services/connection-service";
 import { isMetaConfigured } from "@/lib/services/meta-oauth";
+import { isEmailConfigured } from "@/lib/services/email-service";
 
 export const dynamic = "force-dynamic";
 
@@ -105,7 +106,7 @@ export default async function ClientConnectionsPage({ params }: PageProps) {
               </p>
             </CardHeader>
             <CardContent>
-              <InviteGenerator clientId={client.id} clientName={client.name} />
+              <InviteGenerator clientId={client.id} clientName={client.name} emailConfigured={isEmailConfigured()} />
             </CardContent>
           </Card>
 

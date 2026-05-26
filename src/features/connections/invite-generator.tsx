@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, Copy, Loader2, Send } from "lucide-react";
+import { Check, Copy, Link, Loader2, Mail } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,23 +12,24 @@ import type { ClientInvite, SupportedNetwork } from "@/lib/types";
 interface InviteGeneratorProps {
   clientId: string;
   clientName: string;
+  emailConfigured: boolean;
 }
 
-interface CreatedInviteResponse {
+interface InviteResponse {
   invite: ClientInvite;
   url: string;
-  token: string;
+  sentTo?: string;
 }
 
-export function InviteGenerator({ clientId, clientName }: InviteGeneratorProps) {
+export function InviteGenerator({ clientId, clientName, emailConfigured }: InviteGeneratorProps) {
   const [contactName, setContactName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [networks, setNetworks] = React.useState<SupportedNetwork[]>([
     "facebook",
     "instagram",
   ]);
-  const [pending, setPending] = React.useState(false);
-  const [result, setResult] = React.useState<CreatedInviteResponse | null>(null);
+  const [pending, setPending] = React.useState<"send" | "link" | null>(null);
+  const [result, setResult] = React.useState<InviteResponse | null>(null);
   const [copied, setCopied] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -38,10 +39,40 @@ export function InviteGenerator({ clientId, clientName }: InviteGeneratorProps) 
     );
   };
 
-  const submit = async (event: React.FormEvent) => {
+  const sendInvite = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!email.trim()) {
+      setError("Enter the client's email address to send the invite.");
+      return;
+    }
     setError(null);
-    setPending(true);
+    setPending("send");
+    try {
+      const res = await fetch("/api/invites/send", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          clientId,
+          contactName: contactName.trim() || null,
+          email: email.trim(),
+          allowedNetworks: networks,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Could not send invite.");
+      }
+      setResult(data as InviteResponse);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setPending(null);
+    }
+  };
+
+  const generateLink = async () => {
+    setError(null);
+    setPending("link");
     try {
       const res = await fetch("/api/invites", {
         method: "POST",
@@ -53,16 +84,15 @@ export function InviteGenerator({ clientId, clientName }: InviteGeneratorProps) 
           allowedNetworks: networks,
         }),
       });
+      const data = await res.json();
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || "Could not create invite.");
+        throw new Error(data.error || "Could not create invite.");
       }
-      const data = (await res.json()) as CreatedInviteResponse;
-      setResult(data);
+      setResult(data as InviteResponse);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
-      setPending(false);
+      setPending(null);
     }
   };
 
@@ -73,9 +103,64 @@ export function InviteGenerator({ clientId, clientName }: InviteGeneratorProps) 
     setTimeout(() => setCopied(false), 1500);
   };
 
+  const reset = () => {
+    setResult(null);
+    setError(null);
+    setEmail("");
+    setContactName("");
+  };
+
+  if (result) {
+    return (
+      <div className="space-y-3">
+        {result.sentTo ? (
+          <div className="rounded-md border border-emerald-200 bg-emerald-50/80 p-3">
+            <p className="text-[13px] font-medium text-emerald-900">
+              <Mail className="mr-1.5 inline-block h-3.5 w-3.5" />
+              Invite sent to {result.sentTo}
+            </p>
+            <p className="mt-1 text-[11.5px] text-emerald-700">
+              They&apos;ll receive an email with a button to connect their {result.invite.allowedNetworks.join(" and ")}. 
+              The link expires in 14 days.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-md border border-border bg-muted/40 p-3">
+            <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">
+              Secure invite link — send this to the client
+            </Label>
+            <div className="mt-2 flex items-center gap-2">
+              <Input
+                readOnly
+                value={result.url}
+                onClick={(e) => (e.target as HTMLInputElement).select()}
+                className="font-mono text-[11.5px]"
+              />
+              <Button type="button" variant="outline" size="sm" onClick={copy}>
+                {copied ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+                {copied ? "Copied" : "Copy"}
+              </Button>
+            </div>
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              Expires {new Date(result.invite.expiresAt).toLocaleString()} ·
+              Networks: {result.invite.allowedNetworks.join(", ")}
+            </p>
+          </div>
+        )}
+        <Button type="button" variant="ghost" size="sm" onClick={reset}>
+          Send another invite
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <form onSubmit={submit} className="space-y-3">
+      <form onSubmit={sendInvite} className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
             <Label htmlFor="invite-contact">Contact name</Label>
@@ -87,13 +172,16 @@ export function InviteGenerator({ clientId, clientName }: InviteGeneratorProps) 
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="invite-email">Contact email</Label>
+            <Label htmlFor="invite-email">
+              Contact email {emailConfigured && <span className="text-destructive">*</span>}
+            </Label>
             <Input
               id="invite-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="owner@client.com"
+              required={emailConfigured}
             />
           </div>
         </div>
@@ -123,24 +211,42 @@ export function InviteGenerator({ clientId, clientName }: InviteGeneratorProps) 
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <p className="text-[11.5px] text-muted-foreground">
-            Invite is valid for 14 days. The client opens the link to authorize
-            without an LCI Social Desk account.
+            Invite is valid for 14 days. The client clicks the link to authorize
+            without needing an account.
           </p>
-          <Button
-            type="submit"
-            variant="brand"
-            size="sm"
-            disabled={pending || networks.length === 0}
-          >
-            {pending ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Send className="h-3.5 w-3.5" />
-            )}
-            Generate invite
-          </Button>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={pending !== null || networks.length === 0}
+              onClick={generateLink}
+            >
+              {pending === "link" ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Link className="h-3.5 w-3.5" />
+              )}
+              Copy link
+            </Button>
+            {emailConfigured ? (
+              <Button
+                type="submit"
+                variant="brand"
+                size="sm"
+                disabled={pending !== null || networks.length === 0 || !email.trim()}
+              >
+                {pending === "send" ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Mail className="h-3.5 w-3.5" />
+                )}
+                Send invite
+              </Button>
+            ) : null}
+          </div>
         </div>
       </form>
 
@@ -151,34 +257,6 @@ export function InviteGenerator({ clientId, clientName }: InviteGeneratorProps) 
         >
           {error}
         </p>
-      ) : null}
-
-      {result ? (
-        <div className="space-y-2 rounded-md border border-border bg-muted/40 p-3">
-          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">
-            Secure invite link
-          </Label>
-          <div className="flex items-center gap-2">
-            <Input
-              readOnly
-              value={result.url}
-              onClick={(e) => (e.target as HTMLInputElement).select()}
-              className="font-mono text-[11.5px]"
-            />
-            <Button type="button" variant="outline" size="sm" onClick={copy}>
-              {copied ? (
-                <Check className="h-3.5 w-3.5" />
-              ) : (
-                <Copy className="h-3.5 w-3.5" />
-              )}
-              {copied ? "Copied" : "Copy"}
-            </Button>
-          </div>
-          <p className="text-[11px] text-muted-foreground">
-            Expires {new Date(result.invite.expiresAt).toLocaleString()} ·
-            Networks: {result.invite.allowedNetworks.join(", ")}
-          </p>
-        </div>
       ) : null}
     </div>
   );
