@@ -14,22 +14,32 @@ import { readAdminConfig } from "./config";
 
 let cachedApp: App | null = null;
 
+let initFailed = false;
+
 function ensureApp(): App | null {
   if (cachedApp) return cachedApp;
+  if (initFailed) return null;
   if (getApps().length) {
     cachedApp = getApp();
     return cachedApp;
   }
   const cfg = readAdminConfig();
   if (!cfg) return null;
-  cachedApp = initializeApp({
-    credential: cert({
+  try {
+    cachedApp = initializeApp({
+      credential: cert({
+        projectId: cfg.projectId,
+        clientEmail: cfg.clientEmail,
+        privateKey: cfg.privateKey,
+      }),
       projectId: cfg.projectId,
-      clientEmail: cfg.clientEmail,
-      privateKey: cfg.privateKey,
-    }),
-    projectId: cfg.projectId,
-  });
+    });
+  } catch (err) {
+    initFailed = true;
+    // eslint-disable-next-line no-console
+    console.error("[firebase-admin] Failed to initialize:", err instanceof Error ? err.message : err);
+    return null;
+  }
   return cachedApp;
 }
 
@@ -71,7 +81,12 @@ export interface VerifiedFirebaseUser {
 export async function verifyFirebaseIdToken(
   idToken: string,
 ): Promise<VerifiedFirebaseUser | null> {
-  const auth = getAdminAuth();
+  let auth: Auth | null;
+  try {
+    auth = getAdminAuth();
+  } catch {
+    return null;
+  }
   if (!auth) return null;
   try {
     const decoded = await auth.verifyIdToken(idToken, true);
