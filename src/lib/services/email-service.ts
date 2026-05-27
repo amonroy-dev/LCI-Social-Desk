@@ -24,7 +24,106 @@ export function isEmailConfigured(): boolean {
   return !!process.env.RESEND_API_KEY;
 }
 
-interface SendInviteEmailInput {
+// ---------------------------------------------------------------------------
+// Shared layout
+// ---------------------------------------------------------------------------
+
+interface LayoutInput {
+  agencyName: string;
+  /** Bold h1 at the top of the message. */
+  title: string;
+  /** Personalized greeting line, e.g. "Hi Jamie,". */
+  greeting: string;
+  /** Inner body HTML rendered between the greeting and the bullets. */
+  introHtml: string;
+  /** Optional highlight block (e.g. caption preview). */
+  highlightHtml?: string;
+  bullets: { heading: string; items: string[] };
+  cta: { href: string; label: string };
+  /** Short tail line for expiry / link uniqueness. */
+  expiryNote: string;
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function renderEmailLayout(input: LayoutInput): string {
+  const safeAgency = escapeHtml(input.agencyName);
+  const bullets = input.bullets.items
+    .map(
+      (item) =>
+        `<li style="margin: 0 0 6px; padding: 0;">${item}</li>`,
+    )
+    .join("");
+
+  return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; color: #0f172a; max-width: 560px; margin: 0 auto; padding: 40px 24px;">
+      <div style="margin-bottom: 28px;">
+        <span style="display: inline-block; padding: 6px 10px; background-color: #e6f4fb; color: #0e6a93; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; font-weight: 700; border-radius: 6px; letter-spacing: 0.08em;">
+          ${safeAgency.toUpperCase().slice(0, 4)}
+        </span>
+      </div>
+
+      <h1 style="font-size: 22px; font-weight: 700; margin: 0 0 16px; color: #0f172a; line-height: 1.3;">
+        ${escapeHtml(input.title)}
+      </h1>
+
+      <p style="font-size: 15px; line-height: 1.6; margin: 0 0 14px; color: #334155;">
+        ${escapeHtml(input.greeting)}
+      </p>
+
+      ${input.introHtml}
+
+      ${input.highlightHtml ?? ""}
+
+      <p style="font-size: 15px; font-weight: 700; margin: 22px 0 8px; color: #0f172a;">
+        ${escapeHtml(input.bullets.heading)}
+      </p>
+      <ul style="font-size: 14.5px; line-height: 1.65; margin: 0 0 24px; padding: 0 0 0 22px; color: #334155;">
+        ${bullets}
+      </ul>
+
+      <a href="${input.cta.href}" style="display: inline-block; background-color: #0f172a; color: #ffffff; font-size: 14px; font-weight: 600; text-decoration: none; padding: 12px 22px; border-radius: 6px;">
+        ${escapeHtml(input.cta.label)}
+      </a>
+
+      <p style="font-size: 13.5px; color: #475569; margin: 28px 0 6px; line-height: 1.55;">
+        Questions? Just reply to this email and the ${safeAgency} team will help.
+      </p>
+      <p style="font-size: 13px; color: #64748b; margin: 0 0 18px; line-height: 1.55;">
+        ${escapeHtml(input.expiryNote)}
+      </p>
+
+      <p style="font-size: 13.5px; color: #334155; margin: 0;">
+        — The ${safeAgency} team
+      </p>
+
+      <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 28px 0 14px;" />
+      <p style="font-size: 11px; color: #94a3b8; margin: 0; line-height: 1.5;">
+        Sent via LCI Social Desk on behalf of ${safeAgency}.
+      </p>
+    </div>
+  `;
+}
+
+function formatNetworks(networks: string[]): string {
+  const labels = networks.map((n) => n.charAt(0).toUpperCase() + n.slice(1));
+  if (labels.length <= 1) return labels[0] ?? "";
+  if (labels.length === 2) return `${labels[0]} and ${labels[1]}`;
+  return `${labels.slice(0, -1).join(", ")}, and ${labels[labels.length - 1]}`;
+}
+
+// ---------------------------------------------------------------------------
+// Invite email — "connect your social accounts"
+// ---------------------------------------------------------------------------
+
+export interface SendInviteEmailInput {
   to: string;
   contactName: string | null;
   clientName: string;
@@ -33,50 +132,70 @@ interface SendInviteEmailInput {
   networks: string[];
 }
 
-export async function sendInviteEmail(input: SendInviteEmailInput): Promise<{ success: boolean; error?: string }> {
+export function renderInviteEmail(
+  input: SendInviteEmailInput,
+): { subject: string; html: string } {
+  const networkList = formatNetworks(input.networks);
+  const safeClient = escapeHtml(input.clientName);
+  const safeAgency = escapeHtml(input.agencyName);
+  const safeNetworks = escapeHtml(networkList);
+
+  const subject = `Connect ${safeClient}'s ${networkList} with ${input.agencyName}`;
+
+  const introHtml = `
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 14px; color: #334155;">
+      ${safeAgency} is set up to manage <strong>${safeClient}</strong>'s social media — we just need a quick one-time
+      handoff so we can schedule and publish posts on your behalf.
+    </p>
+  `;
+
+  return {
+    subject,
+    html: renderEmailLayout({
+      agencyName: input.agencyName,
+      title: `Let's connect ${networkList} for ${input.clientName}`,
+      greeting: input.contactName ? `Hi ${input.contactName},` : "Hi,",
+      introHtml,
+      bullets: {
+        heading: "Here's what happens when you click:",
+        items: [
+          `You're sent to ${safeNetworks} to approve access — no new account or password to remember.`,
+          `We only get the permissions needed to publish ${safeClient}'s posts. Nothing else.`,
+          `You can revoke access anytime from Meta's settings or by asking us.`,
+        ],
+      },
+      cta: { href: input.inviteUrl, label: `Connect ${networkList}` },
+      expiryNote: "This link expires in 14 days and is unique to your business — please don't forward it.",
+    }),
+  };
+}
+
+export async function sendInviteEmail(
+  input: SendInviteEmailInput,
+): Promise<{ success: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
-    return { success: false, error: "Email service is not configured. Set RESEND_API_KEY." };
+    return {
+      success: false,
+      error: "Email service is not configured. Set RESEND_API_KEY.",
+    };
   }
-
-  const fromAddress = process.env.EMAIL_FROM ?? "LCI Social Desk <noreply@resend.dev>";
-  const greeting = input.contactName ? `Hi ${input.contactName}` : "Hi";
-  const networkList = input.networks.map((n) => n.charAt(0).toUpperCase() + n.slice(1)).join(" and ");
-
+  const { subject, html } = renderInviteEmail(input);
   const { error } = await resend.emails.send({
-    from: fromAddress,
+    from: getFromAddress(),
     to: input.to,
-    subject: `Connect your ${networkList} — ${input.clientName}`,
-    html: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 20px;">
-        <p style="font-size: 15px; color: #1a1a1a; margin-bottom: 16px;">${greeting},</p>
-        <p style="font-size: 15px; color: #1a1a1a; margin-bottom: 16px;">
-          <strong>${input.agencyName}</strong> needs to connect your ${networkList} account${input.networks.length > 1 ? "s" : ""} for <strong>${input.clientName}</strong> so we can manage your social media publishing.
-        </p>
-        <p style="font-size: 15px; color: #1a1a1a; margin-bottom: 24px;">
-          Click the button below to securely authorize access. No account or password is needed — just approve the connection through ${networkList}.
-        </p>
-        <a href="${input.inviteUrl}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 14px; font-weight: 600; text-decoration: none; padding: 12px 24px; border-radius: 6px;">
-          Connect ${networkList}
-        </a>
-        <p style="font-size: 13px; color: #6b7280; margin-top: 24px;">
-          This link expires in 14 days. If you have questions, reply to this email or contact ${input.agencyName}.
-        </p>
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0 16px;" />
-        <p style="font-size: 11px; color: #9ca3af;">
-          Sent via LCI Social Desk on behalf of ${input.agencyName}.
-        </p>
-      </div>
-    `,
+    subject,
+    html,
   });
-
-  if (error) {
-    return { success: false, error: error.message };
-  }
+  if (error) return { success: false, error: error.message };
   return { success: true };
 }
 
-interface SendReviewRequestEmailInput {
+// ---------------------------------------------------------------------------
+// Review request email — "approve this post before it goes live"
+// ---------------------------------------------------------------------------
+
+export interface SendReviewRequestEmailInput {
   to: string;
   reviewerName: string | null;
   clientName: string;
@@ -84,6 +203,72 @@ interface SendReviewRequestEmailInput {
   caption: string;
   networks: string[];
   schedule: { date: string | null; time: string | null } | null;
+}
+
+export function renderReviewRequestEmail(
+  input: SendReviewRequestEmailInput,
+): { subject: string; html: string } {
+  const agencyName = getAgencyName();
+  const networkList = formatNetworks(input.networks);
+  const safeClient = escapeHtml(input.clientName);
+  const safeAgency = escapeHtml(agencyName);
+  const safeNetworks = escapeHtml(networkList);
+
+  const subject = `${input.clientName} — new ${networkList} post ready for your review`;
+
+  const previewCaption =
+    input.caption.length > 280
+      ? `${input.caption.slice(0, 277)}…`
+      : input.caption;
+
+  const scheduleHtml =
+    input.schedule?.date && input.schedule?.time
+      ? `
+        <p style="font-size: 14px; color: #475569; margin: 4px 0 14px; line-height: 1.55;">
+          Planned to go live <strong style="color: #0f172a;">${escapeHtml(input.schedule.date)} at ${escapeHtml(input.schedule.time)}</strong>.
+        </p>
+      `
+      : "";
+
+  const introHtml = `
+    <p style="font-size: 15px; line-height: 1.6; margin: 0 0 14px; color: #334155;">
+      ${safeAgency} has a new <strong>${safeNetworks}</strong> post lined up for <strong>${safeClient}</strong>.
+      Take a look and let us know it's good to go — or send notes back if anything should change.
+    </p>
+    ${scheduleHtml}
+  `;
+
+  const highlightHtml = `
+    <div style="border-left: 3px solid #0f172a; padding: 14px 18px; background-color: #f8fafc; border-radius: 4px; margin: 22px 0 6px;">
+      <p style="font-size: 11px; color: #64748b; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700;">
+        Draft caption
+      </p>
+      <p style="font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap; color: #0f172a;">
+        ${escapeHtml(previewCaption)}
+      </p>
+    </div>
+  `;
+
+  return {
+    subject,
+    html: renderEmailLayout({
+      agencyName,
+      title: `Your ${input.clientName} post is ready to review`,
+      greeting: input.reviewerName ? `Hi ${input.reviewerName},` : "Hi,",
+      introHtml,
+      highlightHtml,
+      bullets: {
+        heading: "What you can do on the review page:",
+        items: [
+          `See the full ${safeNetworks} previews exactly as the post will appear.`,
+          `Tap <strong>Approve</strong> to greenlight publishing — we'll take it from there.`,
+          `Or tap <strong>Request changes</strong> and tell us what to tweak. We'll update it and circle back.`,
+        ],
+      },
+      cta: { href: input.reviewUrl, label: "Review the post" },
+      expiryNote: "This review link is unique to your business and expires in 7 days.",
+    }),
+  };
 }
 
 export async function sendReviewRequestEmail(
@@ -96,67 +281,13 @@ export async function sendReviewRequestEmail(
       error: "Email service is not configured. Set RESEND_API_KEY.",
     };
   }
-
-  const agencyName = getAgencyName();
-  const greeting = input.reviewerName ? `Hi ${input.reviewerName}` : "Hi";
-  const networkList = input.networks
-    .map((n) => n.charAt(0).toUpperCase() + n.slice(1))
-    .join(" and ");
-  const scheduleLine =
-    input.schedule?.date && input.schedule?.time
-      ? `Planned for <strong>${input.schedule.date} at ${input.schedule.time}</strong>.`
-      : "";
-
-  // Lightly truncate the caption for the email preview.
-  const previewCaption =
-    input.caption.length > 280
-      ? `${input.caption.slice(0, 277)}…`
-      : input.caption;
-
+  const { subject, html } = renderReviewRequestEmail(input);
   const { error } = await resend.emails.send({
     from: getFromAddress(),
     to: input.to,
-    subject: `Review needed: ${input.clientName} ${networkList} post`,
-    html: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px; color: #1a1a1a;">
-        <p style="font-size: 15px; margin-bottom: 16px;">${greeting},</p>
-        <p style="font-size: 15px; margin-bottom: 16px;">
-          <strong>${agencyName}</strong> has a new ${networkList} post ready for
-          <strong>${input.clientName}</strong> and would like your approval before it goes live.
-        </p>
-        ${scheduleLine ? `<p style="font-size: 14px; color: #4b5563; margin-bottom: 16px;">${scheduleLine}</p>` : ""}
-        <div style="border-left: 3px solid #2563eb; padding: 12px 16px; background-color: #f8fafc; border-radius: 4px; margin-bottom: 24px;">
-          <p style="font-size: 13px; color: #6b7280; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600;">Draft caption</p>
-          <p style="font-size: 14px; line-height: 1.55; margin: 0; white-space: pre-wrap;">${escapeHtml(previewCaption)}</p>
-        </div>
-        <p style="font-size: 15px; margin-bottom: 24px;">
-          Click below to see the full Facebook and Instagram previews and approve or request changes — no login required.
-        </p>
-        <a href="${input.reviewUrl}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 14px; font-weight: 600; text-decoration: none; padding: 12px 24px; border-radius: 6px;">
-          Review the post
-        </a>
-        <p style="font-size: 13px; color: #6b7280; margin-top: 24px;">
-          This review link is unique to your business and expires in 7 days. If you have questions, just reply to this email.
-        </p>
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0 16px;" />
-        <p style="font-size: 11px; color: #9ca3af;">
-          Sent via LCI Social Desk on behalf of ${agencyName}.
-        </p>
-      </div>
-    `,
+    subject,
+    html,
   });
-
-  if (error) {
-    return { success: false, error: error.message };
-  }
+  if (error) return { success: false, error: error.message };
   return { success: true };
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
