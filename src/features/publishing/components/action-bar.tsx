@@ -7,19 +7,16 @@ import {
   Loader2,
   Save,
   Send,
+  UserCheck,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  publishPost,
-  saveDraft,
-  schedulePost,
-} from "@/lib/services/post-service";
 import { getClient } from "@/lib/sample-data";
-import type { ScheduleState } from "@/lib/types";
+import type { ScheduleState, SocialPostDraft } from "@/lib/types";
 import type { ComposerAction, ComposerState } from "../state";
 import { ScheduleDialog } from "./schedule-dialog";
+import { ReviewDialog } from "./review-dialog";
 
 type Pending = "idle" | "saving" | "scheduling" | "posting";
 
@@ -28,46 +25,98 @@ interface ActionBarProps {
   dispatch: React.Dispatch<ComposerAction>;
 }
 
+async function postJSON<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json?.error || `Request failed (${res.status})`);
+  }
+  return json as T;
+}
+
 export function ActionBar({ state, dispatch }: ActionBarProps) {
   const { draft } = state;
   const client = getClient(draft.clientId);
   const [pending, setPending] = React.useState<Pending>("idle");
   const [scheduleOpen, setScheduleOpen] = React.useState(false);
+  const [reviewOpen, setReviewOpen] = React.useState(false);
   const [lastMessage, setLastMessage] = React.useState<string | null>(null);
+  const [lastError, setLastError] = React.useState<string | null>(null);
 
   const canPublish =
     draft.networks.length > 0 && draft.caption.trim().length > 0;
+  const canRequestReview = canPublish;
 
   const runSave = async () => {
     setPending("saving");
-    const { draft: updated, event } = await saveDraft(draft);
-    dispatch({ type: "merge-draft", draft: updated });
-    dispatch({ type: "log-event", event });
-    setLastMessage("Draft saved");
-    setPending("idle");
+    setLastError(null);
+    try {
+      const { draft: updated, event } = await postJSON<{
+        draft: SocialPostDraft;
+        event: { id: string; type: string; message: string; at: string };
+      }>("/api/posts/save", { draft });
+      dispatch({ type: "merge-draft", draft: updated });
+      dispatch({
+        type: "log-event",
+        event: { ...event, type: event.type as never },
+      });
+      setLastMessage("Draft saved");
+    } catch (err) {
+      setLastError(err instanceof Error ? err.message : "Save failed");
+    } finally {
+      setPending("idle");
+    }
   };
 
   const runSchedule = async (schedule: ScheduleState) => {
     setPending("scheduling");
-    const { draft: updated, event } = await schedulePost(draft, schedule);
-    dispatch({ type: "merge-draft", draft: updated });
-    dispatch({ type: "log-event", event });
-    setLastMessage(`Scheduled for ${schedule.date} at ${schedule.time}`);
-    setPending("idle");
+    setLastError(null);
+    try {
+      const { draft: updated, event } = await postJSON<{
+        draft: SocialPostDraft;
+        event: { id: string; type: string; message: string; at: string };
+      }>("/api/posts/schedule", { draft, schedule });
+      dispatch({ type: "merge-draft", draft: updated });
+      dispatch({
+        type: "log-event",
+        event: { ...event, type: event.type as never },
+      });
+      setLastMessage(`Scheduled for ${schedule.date} at ${schedule.time}`);
+    } catch (err) {
+      setLastError(err instanceof Error ? err.message : "Schedule failed");
+    } finally {
+      setPending("idle");
+    }
   };
 
   const runPublish = async () => {
     if (!canPublish) return;
     setPending("posting");
-    const { draft: updated, event } = await publishPost(draft);
-    dispatch({ type: "merge-draft", draft: updated });
-    dispatch({ type: "log-event", event });
-    setLastMessage(
-      updated.status === "published"
-        ? "Published to networks"
-        : "Simulated publish complete",
-    );
-    setPending("idle");
+    setLastError(null);
+    try {
+      const { draft: updated, event } = await postJSON<{
+        draft: SocialPostDraft;
+        event: { id: string; type: string; message: string; at: string };
+      }>("/api/posts/publish", { draft });
+      dispatch({ type: "merge-draft", draft: updated });
+      dispatch({
+        type: "log-event",
+        event: { ...event, type: event.type as never },
+      });
+      setLastMessage(
+        updated.status === "published"
+          ? "Published to networks"
+          : "Simulated publish complete",
+      );
+    } catch (err) {
+      setLastError(err instanceof Error ? err.message : "Publish failed");
+    } finally {
+      setPending("idle");
+    }
   };
 
   return (
@@ -99,6 +148,11 @@ export function ActionBar({ state, dispatch }: ActionBarProps) {
                 {lastMessage}
               </span>
             ) : null}
+            {lastError ? (
+              <span className="inline-flex items-center gap-1 text-destructive">
+                {lastError}
+              </span>
+            ) : null}
           </div>
 
           <div className="flex items-center gap-2">
@@ -114,6 +168,16 @@ export function ActionBar({ state, dispatch }: ActionBarProps) {
                 <Save className="h-3.5 w-3.5" />
               )}
               Save Draft
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setReviewOpen(true)}
+              disabled={pending !== "idle" || !canRequestReview}
+              title="Generate a secure link for the client to review and approve"
+            >
+              <UserCheck className="h-3.5 w-3.5" />
+              Send for Approval
             </Button>
             <Button
               variant="outline"
@@ -147,6 +211,16 @@ export function ActionBar({ state, dispatch }: ActionBarProps) {
         initial={draft.schedule}
         onConfirm={runSchedule}
       />
+
+      <ReviewDialog
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        draft={draft}
+        onSubmitted={({ draft: updatedDraft }) => {
+          dispatch({ type: "merge-draft", draft: updatedDraft });
+          setLastMessage("Sent to client for review");
+        }}
+      />
     </>
   );
 }
@@ -154,9 +228,12 @@ export function ActionBar({ state, dispatch }: ActionBarProps) {
 function StatusBadge({ status }: { status: ComposerState["draft"]["status"] }) {
   const map: Record<
     ComposerState["draft"]["status"],
-    { label: string; variant: "brand" | "warning" | "success" | "outline" }
+    { label: string; variant: "brand" | "warning" | "success" | "outline" | "destructive" }
   > = {
     draft: { label: "Draft", variant: "brand" },
+    pending_review: { label: "Pending review", variant: "warning" },
+    changes_requested: { label: "Changes requested", variant: "destructive" },
+    approved: { label: "Approved", variant: "success" },
     scheduled: { label: "Scheduled", variant: "warning" },
     published: { label: "Published", variant: "success" },
     simulated: { label: "Simulated", variant: "outline" },

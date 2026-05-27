@@ -166,7 +166,9 @@ Firebase in Vercel, the demo button disappears in production.
 | `socialConnections` storage | ✅ (Firestore) | in-memory fallback |
 | `auditLogs` writes | ✅ (Firestore, best-effort) | in-memory ring fallback |
 | `clients` reads | ✅ (Firestore, with sample-data fallback) | sample data |
-| `socialPosts` storage | | in-memory only (next milestone) |
+| `socialPosts` storage | ✅ (Firestore) | in-memory fallback |
+| `postReviews` storage | ✅ (Firestore) | in-memory fallback |
+| Review token signing + lifecycle | ✅ | |
 
 Every Firestore-backed surface degrades gracefully to in-memory when the
 admin SDK isn't configured — local dev and unconfigured Vercel previews
