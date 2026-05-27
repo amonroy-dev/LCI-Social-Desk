@@ -16,7 +16,7 @@ interface PageProps {
 }
 
 export const metadata: Metadata = {
-  title: "Sign in — LCI Social Desk",
+  title: "Client Portal — Sign In",
   robots: { index: false, follow: false },
 };
 
@@ -42,10 +42,10 @@ export default async function SignInPage({ searchParams }: PageProps) {
             </span>
             <div className="leading-tight">
               <div className="text-sm font-semibold tracking-tight text-white">
-                LCI Social Desk
+                LCI Marketing
               </div>
               <div className="text-[11px] uppercase tracking-wider text-[hsl(var(--sidebar-muted))]">
-                Internal agency workspace
+                Client Portal
               </div>
             </div>
           </div>
@@ -78,7 +78,7 @@ export default async function SignInPage({ searchParams }: PageProps) {
                   <span className="font-mono text-[11px] font-bold">LCI</span>
                 </span>
                 <span className="text-sm font-semibold tracking-tight">
-                  LCI Social Desk
+                  LCI Marketing
                 </span>
               </div>
             </div>
@@ -105,14 +105,15 @@ export default async function SignInPage({ searchParams }: PageProps) {
             />
 
             <p className="text-[11px] text-muted-foreground">
-              Need to connect social accounts for a client?{" "}
+              Not a team member?{" "}
               <Link
                 href="/"
                 className="font-medium text-[hsl(var(--brand))] hover:underline"
               >
-                Clients use a separate secure invite link
+                Visit lci-360.com
               </Link>
-              — they should not sign in here.
+              {" "}to learn about our services. Clients connect social accounts via
+              individually-issued secure invite links.
             </p>
           </div>
         </section>
