@@ -3,7 +3,6 @@ import "server-only";
 import type { PostReview } from "@/lib/types";
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
-  COLLECTIONS,
   classifyFirestoreError,
 } from "@/lib/firebase/firestore-helpers";
 
@@ -11,11 +10,21 @@ import {
  * Repository for `postReviews` — client-facing approval requests sent for
  * a particular SocialPostDraft. Uses Firestore when available and falls
  * back to an in-memory map otherwise.
+ *
+ * The in-memory store is pinned to globalThis so it survives Next's dev-
+ * mode module reloads and stays shared across server components + route
+ * handlers (which otherwise compile into isolated module instances).
  */
 
 const COLLECTION = "postReviews";
 
-const memory = new Map<string, PostReview>();
+const memory: Map<string, PostReview> = (() => {
+  const g = globalThis as unknown as {
+    __lciReviewMemory?: Map<string, PostReview>;
+  };
+  if (!g.__lciReviewMemory) g.__lciReviewMemory = new Map();
+  return g.__lciReviewMemory;
+})();
 
 function toRecord(review: PostReview): Record<string, unknown> {
   return { ...review };

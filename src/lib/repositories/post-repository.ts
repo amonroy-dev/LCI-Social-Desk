@@ -11,9 +11,19 @@ import {
  * Repository for `socialPosts`. Uses Firestore when the admin SDK is
  * available; otherwise falls back to an in-memory map so the composer +
  * review workflow remains usable in local dev and unconfigured previews.
+ *
+ * The in-memory store is pinned to globalThis so it survives Next's dev-
+ * mode module reloads and stays shared across server components + route
+ * handlers (which otherwise compile into isolated module instances).
  */
 
-const memory = new Map<string, SocialPostDraft>();
+const memory: Map<string, SocialPostDraft> = (() => {
+  const g = globalThis as unknown as {
+    __lciPostMemory?: Map<string, SocialPostDraft>;
+  };
+  if (!g.__lciPostMemory) g.__lciPostMemory = new Map();
+  return g.__lciPostMemory;
+})();
 
 function toRecord(post: SocialPostDraft): Record<string, unknown> {
   return { ...post };
