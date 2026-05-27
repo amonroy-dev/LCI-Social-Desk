@@ -140,6 +140,33 @@ META_SCOPES=pages_show_list,pages_read_engagement,pages_manage_posts,instagram_b
 META_STATE_SECRET=
 ```
 
+### Email (Resend) — invite + client review emails
+
+```bash
+# Required to actually email invite + review links to clients. Without
+# this, the dashboard still generates copyable links and the "Send email"
+# buttons are hidden / return a 503.
+RESEND_API_KEY=
+
+# Verified sender. Format: "Display Name <you@your-domain.com>". Defaults
+# to "LCI Social Desk <noreply@resend.dev>" — fine for Resend's sandbox,
+# but production deliverability needs a verified domain in your Resend
+# dashboard.
+EMAIL_FROM="LCI Social Desk <hello@your-domain.com>"
+
+# Public agency name used in invite + review email copy.
+NEXT_PUBLIC_AGENCY_NAME=LCI
+```
+
+When `RESEND_API_KEY` is unset, the Composer's **Send for Approval**
+dialog shows only the **Copy link** action and a hint about how to enable
+direct email. With Resend configured, a **Send email** button appears
+next to it that uses `sendReviewRequestEmail` to deliver a branded message
+to the client.
+
+For Cursor Cloud deployments, set these as Cloud Agent secrets in the
+dashboard so they're injected on every run.
+
 ### Optional
 
 ```bash
@@ -166,9 +193,7 @@ Firebase in Vercel, the demo button disappears in production.
 | `socialConnections` storage | ✅ (Firestore) | in-memory fallback |
 | `auditLogs` writes | ✅ (Firestore, best-effort) | in-memory ring fallback |
 | `clients` reads | ✅ (Firestore, with sample-data fallback) | sample data |
-| `socialPosts` storage | ✅ (Firestore) | in-memory fallback |
-| `postReviews` storage | ✅ (Firestore) | in-memory fallback |
-| Review token signing + lifecycle | ✅ | |
+| `socialPosts` storage | | in-memory only (next milestone) |
 
 Every Firestore-backed surface degrades gracefully to in-memory when the
 admin SDK isn't configured — local dev and unconfigured Vercel previews
