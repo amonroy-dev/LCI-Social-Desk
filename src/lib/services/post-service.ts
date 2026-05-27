@@ -1,89 +1,103 @@
+import "server-only";
+
+import { postRepository } from "@/lib/repositories/post-repository";
+import { recordAudit } from "@/lib/services/audit-service";
 import type {
   AuditLogEvent,
   PostStatus,
   ScheduleState,
   SocialPostDraft,
-} from "../types";
+} from "@/lib/types";
 
 /**
- * Stubbed publishing service. Each function simulates a Firestore-backed call
- * with a small artificial delay so the UI can show realistic loading states.
- * Swap these implementations for Firestore reads/writes when the backend is
- * wired in — the public signatures and shapes are designed to remain stable.
+ * Publishing service. Persists drafts to the post repository (Firestore or
+ * in-memory fallback) so subsequent flows — namely client review/approval —
+ * can read them back by id. Provider publish is still simulated unless
+ * NEXT_PUBLIC_ENABLE_PROVIDER_PUBLISH=true.
  */
 
-const wait = (ms = 350) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function makeAudit(
-  type: AuditLogEvent["type"],
-  message: string,
-): AuditLogEvent {
+function ensureId(draft: SocialPostDraft): SocialPostDraft {
+  if (draft.id && draft.id !== "draft_local") return draft;
   return {
-    id: `evt_${Math.random().toString(36).slice(2, 10)}`,
-    type,
-    message,
-    at: new Date().toISOString(),
+    ...draft,
+    id: `post_${Math.random().toString(36).slice(2, 12)}`,
   };
+}
+
+async function persist(
+  draft: SocialPostDraft,
+  patch: Partial<SocialPostDraft>,
+): Promise<SocialPostDraft> {
+  const next: SocialPostDraft = {
+    ...draft,
+    ...patch,
+    updatedAt: new Date().toISOString(),
+  };
+  await postRepository.upsert(next);
+  return next;
 }
 
 export async function saveDraft(
   draft: SocialPostDraft,
 ): Promise<{ draft: SocialPostDraft; event: AuditLogEvent }> {
-  await wait();
-  const saved: SocialPostDraft = {
-    ...draft,
-    status: "draft",
-    isDraft: true,
-    updatedAt: new Date().toISOString(),
-  };
-  return {
-    draft: saved,
-    event: makeAudit("draft.saved", `Draft saved for ${draft.clientId}.`),
-  };
+  const withId = ensureId(draft);
+  const saved = await persist(withId, { status: "draft", isDraft: true });
+  const event = await recordAudit({
+    type: "draft.saved",
+    message: `Draft saved for ${saved.clientId}.`,
+    clientId: saved.clientId,
+    meta: { postId: saved.id },
+  });
+  return { draft: saved, event };
 }
 
 export async function schedulePost(
   draft: SocialPostDraft,
   schedule: ScheduleState,
 ): Promise<{ draft: SocialPostDraft; event: AuditLogEvent }> {
-  await wait();
-  const scheduled: SocialPostDraft = {
-    ...draft,
+  const withId = ensureId(draft);
+  const saved = await persist(withId, {
     schedule,
     status: "scheduled",
     isDraft: false,
-    updatedAt: new Date().toISOString(),
-  };
-  return {
-    draft: scheduled,
-    event: makeAudit(
-      "post.scheduled",
-      `Scheduled for ${schedule.date} at ${schedule.time}.`,
-    ),
-  };
+  });
+  const event = await recordAudit({
+    type: "post.scheduled",
+    message: `Scheduled for ${schedule.date} at ${schedule.time}.`,
+    clientId: saved.clientId,
+    meta: { postId: saved.id, schedule },
+  });
+  return { draft: saved, event };
 }
 
 export async function publishPost(
   draft: SocialPostDraft,
 ): Promise<{ draft: SocialPostDraft; event: AuditLogEvent }> {
-  await wait(600);
+  const withId = ensureId(draft);
   const status: PostStatus =
     process.env.NEXT_PUBLIC_ENABLE_PROVIDER_PUBLISH === "true"
       ? "published"
       : "simulated";
-  const updated: SocialPostDraft = {
-    ...draft,
-    status,
-    isDraft: false,
-    updatedAt: new Date().toISOString(),
-  };
-  return {
-    draft: updated,
-    event: makeAudit(
-      status === "published" ? "post.published" : "post.simulated",
+  const saved = await persist(withId, { status, isDraft: false });
+  const event = await recordAudit({
+    type: status === "published" ? "post.published" : "post.simulated",
+    message:
       status === "published"
-        ? `Post published to ${draft.networks.join(", ")}.`
-        : `Simulated publish to ${draft.networks.join(", ")}.`,
-    ),
-  };
+        ? `Post published to ${saved.networks.join(", ")}.`
+        : `Simulated publish to ${saved.networks.join(", ")}.`,
+    clientId: saved.clientId,
+    meta: { postId: saved.id, networks: saved.networks },
+  });
+  return { draft: saved, event };
+}
+
+export async function getPost(id: string): Promise<SocialPostDraft | null> {
+  return postRepository.get(id);
+}
+
+export async function listPosts(filters: {
+  clientId?: string;
+  statuses?: SocialPostDraft["status"][];
+} = {}): Promise<SocialPostDraft[]> {
+  return postRepository.list(filters);
 }

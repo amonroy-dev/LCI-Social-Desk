@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Send,
   Settings,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 

@@ -1,6 +1,13 @@
 export type NetworkId = "facebook" | "instagram" | "linkedin";
 
-export type PostStatus = "draft" | "scheduled" | "published" | "simulated";
+export type PostStatus =
+  | "draft"
+  | "pending_review"
+  | "changes_requested"
+  | "approved"
+  | "scheduled"
+  | "published"
+  | "simulated";
 
 export type AuditEventType =
   | "draft.created"
@@ -19,7 +26,11 @@ export type AuditEventType =
   | "connection.completed"
   | "connection.failed"
   | "connection.reconnected"
-  | "connection.disconnected";
+  | "connection.disconnected"
+  | "review.requested"
+  | "review.opened"
+  | "review.approved"
+  | "review.changes_requested";
 
 export type AgencyRole = "owner" | "admin" | "member";
 
@@ -131,6 +142,49 @@ export interface ScheduleState {
   time: string | null;
 }
 
+export type ReviewDecision = "approved" | "changes_requested";
+
+export interface ReviewDecisionRecord {
+  decision: ReviewDecision;
+  /** ISO timestamp the decision was recorded. */
+  at: string;
+  /** Display name the client entered when reviewing, when provided. */
+  reviewerName: string | null;
+  /** Optional comment included with the decision. */
+  comment: string | null;
+}
+
+export type PostReviewStatus =
+  | "pending"
+  | "opened"
+  | "approved"
+  | "changes_requested"
+  | "expired"
+  | "revoked";
+
+export interface PostReview {
+  id: string;
+  postId: string;
+  clientId: string;
+  /** Email of the client contact, when known. */
+  reviewerEmail: string | null;
+  /** Display name of the client contact, when known. */
+  reviewerName: string | null;
+  status: PostReviewStatus;
+  /** ISO timestamp. */
+  expiresAt: string;
+  /** ISO timestamp. */
+  createdAt: string;
+  /** Agency user uid who requested the review. */
+  createdBy: string;
+  /** ISO timestamp the link was first opened. */
+  openedAt: string | null;
+  /** ISO timestamp of the latest decision, when present. */
+  decidedAt: string | null;
+  /** Full ordered history of decisions (most recent last). */
+  history: ReviewDecisionRecord[];
+}
+
 export interface SocialPostDraft {
   id: string;
   clientId: string;
@@ -143,6 +197,12 @@ export interface SocialPostDraft {
   schedule: ScheduleState;
   status: PostStatus;
   updatedAt: string;
+  /** ID of the most recent PostReview for this draft, if any. */
+  reviewId?: string | null;
+  /** ISO timestamp the post entered pending_review, if applicable. */
+  submittedForReviewAt?: string | null;
+  /** Latest review decision, mirrored for fast composer reads. */
+  lastReviewDecision?: ReviewDecisionRecord | null;
 }
 
 export interface AuditLogEvent {
