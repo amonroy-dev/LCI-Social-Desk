@@ -16,10 +16,12 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LCI Social Desk — Internal",
+  title: {
+    default: "LCI Marketing — Social Media Management Agency",
+    template: "%s | LCI Marketing",
+  },
   description:
-    "Internal agency publishing workspace for composing, previewing, and scheduling social content across client accounts.",
-  robots: { index: false, follow: false },
+    "LCI Marketing is a full-service social media management agency helping brands grow their presence across Facebook, Instagram, and beyond.",
 };
 
 export default function RootLayout({
