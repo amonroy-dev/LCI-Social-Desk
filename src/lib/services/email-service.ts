@@ -16,7 +16,12 @@ function getAgencyName(): string {
   return process.env.NEXT_PUBLIC_AGENCY_NAME ?? "LCI";
 }
 
-function getFromAddress(): string {
+function getFromAddress(): string | null {
+  return process.env.EMAIL_FROM ?? null;
+}
+
+function getDefaultFromAddress(): string {
+  // Used by the built-in fallback templates when EMAIL_FROM isn't set.
   return process.env.EMAIL_FROM ?? "LCI Social Desk <noreply@resend.dev>";
 }
 
@@ -24,23 +29,30 @@ export function isEmailConfigured(): boolean {
   return !!process.env.RESEND_API_KEY;
 }
 
+/** Resend hosted template id (UUID) or alias for the review request email. */
+function getReviewTemplateId(): string | null {
+  const v = process.env.RESEND_REVIEW_TEMPLATE_ID?.trim();
+  return v && v.length > 0 ? v : null;
+}
+
+/** Resend hosted template id (UUID) or alias for the connection invite email. */
+function getInviteTemplateId(): string | null {
+  const v = process.env.RESEND_INVITE_TEMPLATE_ID?.trim();
+  return v && v.length > 0 ? v : null;
+}
+
 // ---------------------------------------------------------------------------
-// Shared layout
+// Shared layout (built-in fallback templates)
 // ---------------------------------------------------------------------------
 
 interface LayoutInput {
   agencyName: string;
-  /** Bold h1 at the top of the message. */
   title: string;
-  /** Personalized greeting line, e.g. "Hi Jamie,". */
   greeting: string;
-  /** Inner body HTML rendered between the greeting and the bullets. */
   introHtml: string;
-  /** Optional highlight block (e.g. caption preview). */
   highlightHtml?: string;
   bullets: { heading: string; items: string[] };
   cta: { href: string; label: string };
-  /** Short tail line for expiry / link uniqueness. */
   expiryNote: string;
 }
 
@@ -132,6 +144,19 @@ export interface SendInviteEmailInput {
   networks: string[];
 }
 
+export function buildInviteTemplateVariables(
+  input: SendInviteEmailInput,
+): Record<string, string> {
+  const networkList = formatNetworks(input.networks);
+  return {
+    CUSTOMER_NAME: input.contactName?.trim() || "there",
+    CLIENT_NAME: input.clientName,
+    AGENCY_NAME: input.agencyName,
+    NETWORKS: networkList,
+    INVITE_URL: input.inviteUrl,
+  };
+}
+
 export function renderInviteEmail(
   input: SendInviteEmailInput,
 ): { subject: string; html: string } {
@@ -140,7 +165,7 @@ export function renderInviteEmail(
   const safeAgency = escapeHtml(input.agencyName);
   const safeNetworks = escapeHtml(networkList);
 
-  const subject = `Connect ${safeClient}'s ${networkList} with ${input.agencyName}`;
+  const subject = `Connect ${input.clientName}'s ${networkList} with ${input.agencyName}`;
 
   const introHtml = `
     <p style="font-size: 15px; line-height: 1.6; margin: 0 0 14px; color: #334155;">
@@ -180,9 +205,29 @@ export async function sendInviteEmail(
       error: "Email service is not configured. Set RESEND_API_KEY.",
     };
   }
+
+  const templateId = getInviteTemplateId();
+  const explicitFrom = getFromAddress();
+
+  if (templateId) {
+    // Resend-hosted template path. Subject + from come from the template by
+    // default; we pass `from` only when EMAIL_FROM is explicitly set so the
+    // template's configured sender wins out of the box.
+    const { error } = await resend.emails.send({
+      ...(explicitFrom ? { from: explicitFrom } : {}),
+      to: input.to,
+      template: {
+        id: templateId,
+        variables: buildInviteTemplateVariables(input),
+      },
+    });
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  }
+
   const { subject, html } = renderInviteEmail(input);
   const { error } = await resend.emails.send({
-    from: getFromAddress(),
+    from: getDefaultFromAddress(),
     to: input.to,
     subject,
     html,
@@ -203,6 +248,37 @@ export interface SendReviewRequestEmailInput {
   caption: string;
   networks: string[];
   schedule: { date: string | null; time: string | null } | null;
+}
+
+export function buildReviewTemplateVariables(
+  input: SendReviewRequestEmailInput,
+): Record<string, string> {
+  const networkList = formatNetworks(input.networks);
+  // Truncate the caption to keep us inside Resend's 2,000-char variable cap
+  // and to keep the email scannable.
+  const captionPreview =
+    input.caption.length > 280
+      ? `${input.caption.slice(0, 277)}…`
+      : input.caption;
+
+  const scheduleDate = input.schedule?.date ?? "";
+  const scheduleTime = input.schedule?.time ?? "";
+  const scheduleLine =
+    scheduleDate && scheduleTime
+      ? `Planned to go live ${scheduleDate} at ${scheduleTime}.`
+      : "";
+
+  return {
+    CUSTOMER_NAME: input.reviewerName?.trim() || "there",
+    CLIENT_NAME: input.clientName,
+    AGENCY_NAME: getAgencyName(),
+    NETWORKS: networkList,
+    REVIEW_URL: input.reviewUrl,
+    CAPTION: captionPreview,
+    SCHEDULE_DATE: scheduleDate,
+    SCHEDULE_TIME: scheduleTime,
+    SCHEDULE_LINE: scheduleLine,
+  };
 }
 
 export function renderReviewRequestEmail(
@@ -281,9 +357,26 @@ export async function sendReviewRequestEmail(
       error: "Email service is not configured. Set RESEND_API_KEY.",
     };
   }
+
+  const templateId = getReviewTemplateId();
+  const explicitFrom = getFromAddress();
+
+  if (templateId) {
+    const { error } = await resend.emails.send({
+      ...(explicitFrom ? { from: explicitFrom } : {}),
+      to: input.to,
+      template: {
+        id: templateId,
+        variables: buildReviewTemplateVariables(input),
+      },
+    });
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  }
+
   const { subject, html } = renderReviewRequestEmail(input);
   const { error } = await resend.emails.send({
-    from: getFromAddress(),
+    from: getDefaultFromAddress(),
     to: input.to,
     subject,
     html,
