@@ -4,6 +4,7 @@ import type { PostReview } from "@/lib/types";
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
   classifyFirestoreError,
+  coerceToISOString,
 } from "@/lib/firebase/firestore-helpers";
 
 /**
@@ -31,6 +32,28 @@ function toRecord(review: PostReview): Record<string, unknown> {
 }
 
 function fromDoc(id: string, data: Record<string, unknown>): PostReview {
+  const rawHistory = Array.isArray(data.history) ? (data.history as unknown[]) : [];
+  const history = rawHistory
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") return null;
+      const e = entry as {
+        decision?: unknown;
+        at?: unknown;
+        reviewerName?: unknown;
+        comment?: unknown;
+      };
+      if (e.decision !== "approved" && e.decision !== "changes_requested") {
+        return null;
+      }
+      return {
+        decision: e.decision,
+        at: coerceToISOString(e.at) ?? "",
+        reviewerName: typeof e.reviewerName === "string" ? e.reviewerName : null,
+        comment: typeof e.comment === "string" ? e.comment : null,
+      };
+    })
+    .filter((x): x is PostReview["history"][number] => x !== null);
+
   return {
     id,
     postId: String(data.postId ?? ""),
@@ -38,12 +61,12 @@ function fromDoc(id: string, data: Record<string, unknown>): PostReview {
     reviewerEmail: (data.reviewerEmail as string | null) ?? null,
     reviewerName: (data.reviewerName as string | null) ?? null,
     status: (data.status as PostReview["status"]) ?? "pending",
-    expiresAt: String(data.expiresAt ?? ""),
-    createdAt: String(data.createdAt ?? ""),
+    expiresAt: coerceToISOString(data.expiresAt) ?? "",
+    createdAt: coerceToISOString(data.createdAt) ?? "",
     createdBy: String(data.createdBy ?? ""),
-    openedAt: (data.openedAt as string | null) ?? null,
-    decidedAt: (data.decidedAt as string | null) ?? null,
-    history: ((data.history as PostReview["history"]) ?? []) as PostReview["history"],
+    openedAt: coerceToISOString(data.openedAt),
+    decidedAt: coerceToISOString(data.decidedAt),
+    history,
   };
 }
 

@@ -5,6 +5,7 @@ import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
   COLLECTIONS,
   classifyFirestoreError,
+  coerceToISOString,
 } from "@/lib/firebase/firestore-helpers";
 
 /**
@@ -44,11 +45,31 @@ function fromDoc(id: string, data: Record<string, unknown>): SocialPostDraft {
       time: null,
     },
     status: (data.status as SocialPostDraft["status"]) ?? "draft",
-    updatedAt: String(data.updatedAt ?? ""),
+    updatedAt: coerceToISOString(data.updatedAt) ?? "",
     reviewId: (data.reviewId as string | null) ?? null,
-    submittedForReviewAt: (data.submittedForReviewAt as string | null) ?? null,
-    lastReviewDecision:
-      (data.lastReviewDecision as SocialPostDraft["lastReviewDecision"]) ?? null,
+    submittedForReviewAt: coerceToISOString(data.submittedForReviewAt),
+    lastReviewDecision: coerceReviewDecision(data.lastReviewDecision),
+  };
+}
+
+function coerceReviewDecision(
+  value: unknown,
+): SocialPostDraft["lastReviewDecision"] {
+  if (!value || typeof value !== "object") return null;
+  const v = value as {
+    decision?: unknown;
+    at?: unknown;
+    reviewerName?: unknown;
+    comment?: unknown;
+  };
+  if (v.decision !== "approved" && v.decision !== "changes_requested") {
+    return null;
+  }
+  return {
+    decision: v.decision,
+    at: coerceToISOString(v.at) ?? "",
+    reviewerName: typeof v.reviewerName === "string" ? v.reviewerName : null,
+    comment: typeof v.comment === "string" ? v.comment : null,
   };
 }
 

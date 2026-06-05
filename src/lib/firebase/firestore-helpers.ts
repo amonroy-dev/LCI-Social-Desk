@@ -31,6 +31,64 @@ interface MaybeFirestoreError {
 }
 
 /**
+ * Coerce a Firestore-shaped timestamp into a plain ISO string. The
+ * firebase-admin SDK returns native `Timestamp` class instances when a doc
+ * field was written with the Firestore Timestamp type (e.g. set via the
+ * Firebase Console UI or by an earlier server-timestamp write). Passing
+ * those through `Server Component -> Client Component` props throws:
+ *   "Only plain objects ... can be passed to Client Components..."
+ * because they're class instances, not POJOs.
+ *
+ * This helper accepts:
+ *   - already-ISO strings (returned as-is)
+ *   - native Date instances
+ *   - millisecond epochs as numbers
+ *   - firebase-admin Timestamp instances (`.toDate()` available)
+ *   - serialized Timestamp shapes ({_seconds,_nanoseconds} or
+ *     {seconds,nanoseconds})
+ *   - null / undefined / unknown -> null
+ */
+export function coerceToISOString(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === "string") return value;
+  if (value instanceof Date) {
+    const t = value.getTime();
+    return Number.isFinite(t) ? value.toISOString() : null;
+  }
+  if (typeof value === "number") {
+    const d = new Date(value);
+    return Number.isFinite(d.getTime()) ? d.toISOString() : null;
+  }
+  if (typeof value === "object") {
+    const v = value as {
+      toDate?: () => Date;
+      _seconds?: unknown;
+      _nanoseconds?: unknown;
+      seconds?: unknown;
+      nanoseconds?: unknown;
+    };
+    if (typeof v.toDate === "function") {
+      try {
+        const d = v.toDate();
+        if (d instanceof Date && Number.isFinite(d.getTime())) {
+          return d.toISOString();
+        }
+      } catch {
+        // Fall through to manual seconds/nanos read below.
+      }
+    }
+    const sec = v._seconds ?? v.seconds;
+    const ns = v._nanoseconds ?? v.nanoseconds ?? 0;
+    if (typeof sec === "number" && typeof ns === "number") {
+      const ms = sec * 1000 + Math.floor(ns / 1e6);
+      const d = new Date(ms);
+      return Number.isFinite(d.getTime()) ? d.toISOString() : null;
+    }
+  }
+  return null;
+}
+
+/**
  * Normalizes errors thrown by firebase-admin/firestore into the categories the
  * services care about. Logs the raw error in development for visibility and
  * returns a sentinel that callers can branch on without leaking provider

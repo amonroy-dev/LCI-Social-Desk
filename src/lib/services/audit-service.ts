@@ -5,6 +5,7 @@ import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
   COLLECTIONS,
   classifyFirestoreError,
+  coerceToISOString,
 } from "@/lib/firebase/firestore-helpers";
 
 /**
@@ -108,7 +109,7 @@ export async function listAuditEvents(
         id: doc.id,
         type: data.type,
         message: data.message,
-        at: data.at,
+        at: coerceToISOString(data.at) ?? "",
         actorUid: data.actorUid ?? null,
         clientId: data.clientId ?? null,
         meta: data.meta,

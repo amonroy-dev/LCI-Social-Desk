@@ -5,6 +5,7 @@ import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
   COLLECTIONS,
   classifyFirestoreError,
+  coerceToISOString,
 } from "@/lib/firebase/firestore-helpers";
 
 /**
@@ -27,11 +28,11 @@ function fromDoc(id: string, data: Record<string, unknown>): ClientInvite {
     contactName: (data.contactName as string | null) ?? null,
     allowedNetworks: ((data.allowedNetworks as string[] | undefined) ?? []) as ClientInvite["allowedNetworks"],
     status: (data.status as ClientInvite["status"]) ?? "pending",
-    expiresAt: String(data.expiresAt ?? ""),
-    createdAt: String(data.createdAt ?? ""),
+    expiresAt: coerceToISOString(data.expiresAt) ?? "",
+    createdAt: coerceToISOString(data.createdAt) ?? "",
     createdBy: String(data.createdBy ?? ""),
-    usedAt: (data.usedAt as string | null) ?? null,
-    openedAt: (data.openedAt as string | null) ?? null,
+    usedAt: coerceToISOString(data.usedAt),
+    openedAt: coerceToISOString(data.openedAt),
   };
 }
 
