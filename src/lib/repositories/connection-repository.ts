@@ -63,8 +63,12 @@ export const connectionRepository = {
       return fromDoc(snap.id, snap.data() ?? {});
     } catch (err) {
       const e = classifyFirestoreError(err);
-      if (e.kind === "not-found") return null;
-      throw new Error(`Could not load connection (${e.kind}): ${e.message}`);
+      // Reads should never crash a server component — log and degrade.
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[connections] get(${clientId},${platform}) failed: ${e.kind} ${e.message}`,
+      );
+      return memory.get(keyFor(clientId, platform)) ?? null;
     }
   },
 
@@ -81,7 +85,11 @@ export const connectionRepository = {
       return snap.docs.map((d) => fromDoc(d.id, d.data()));
     } catch (err) {
       const e = classifyFirestoreError(err);
-      throw new Error(`Could not list connections (${e.kind}): ${e.message}`);
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[connections] listForClient(${clientId}) failed: ${e.kind} ${e.message} — falling back to in-memory`,
+      );
+      return Array.from(memory.values()).filter((c) => c.clientId === clientId);
     }
   },
 

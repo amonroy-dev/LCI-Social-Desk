@@ -76,12 +76,15 @@ export const postRepository = {
     if (!db) return memory.get(id) ?? null;
     try {
       const snap = await db.collection(COLLECTIONS.socialPosts).doc(id).get();
-      if (!snap.exists) return null;
+      if (!snap.exists) return memory.get(id) ?? null;
       return fromDoc(snap.id, snap.data() ?? {});
     } catch (err) {
       const e = classifyFirestoreError(err);
-      if (e.kind === "not-found") return null;
-      throw new Error(`Could not load post (${e.kind}): ${e.message}`);
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[posts] get(${id}) failed: ${e.kind} ${e.message} — falling back to in-memory`,
+      );
+      return memory.get(id) ?? null;
     }
   },
 
@@ -122,7 +125,19 @@ export const postRepository = {
       return rows;
     } catch (err) {
       const e = classifyFirestoreError(err);
-      throw new Error(`Could not list posts (${e.kind}): ${e.message}`);
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[posts] list failed: ${e.kind} ${e.message} — falling back to in-memory`,
+      );
+      let all = Array.from(memory.values()).sort((a, b) =>
+        a.updatedAt < b.updatedAt ? 1 : -1,
+      );
+      if (filters.clientId) all = all.filter((p) => p.clientId === filters.clientId);
+      if (filters.statuses && filters.statuses.length) {
+        const set = new Set(filters.statuses);
+        all = all.filter((p) => set.has(p.status));
+      }
+      return all;
     }
   },
 

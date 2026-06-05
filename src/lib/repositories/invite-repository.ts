@@ -59,12 +59,15 @@ export const inviteRepository = {
     if (!db) return memory.get(id) ?? null;
     try {
       const snap = await db.collection(COLLECTIONS.clientInvites).doc(id).get();
-      if (!snap.exists) return null;
+      if (!snap.exists) return memory.get(id) ?? null;
       return fromDoc(snap.id, snap.data() ?? {});
     } catch (err) {
       const e = classifyFirestoreError(err);
-      if (e.kind === "not-found") return null;
-      throw new Error(`Could not load invite (${e.kind}): ${e.message}`);
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[invites] get(${id}) failed: ${e.kind} ${e.message} — falling back to in-memory`,
+      );
+      return memory.get(id) ?? null;
     }
   },
 
@@ -92,7 +95,14 @@ export const inviteRepository = {
       return snap.docs.map((d) => fromDoc(d.id, d.data()));
     } catch (err) {
       const e = classifyFirestoreError(err);
-      throw new Error(`Could not list invites (${e.kind}): ${e.message}`);
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[invites] list failed: ${e.kind} ${e.message} — falling back to in-memory`,
+      );
+      const all = Array.from(memory.values()).sort((a, b) =>
+        a.createdAt < b.createdAt ? 1 : -1,
+      );
+      return clientId ? all.filter((i) => i.clientId === clientId) : all;
     }
   },
 

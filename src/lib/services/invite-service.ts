@@ -161,18 +161,28 @@ export async function resolveInviteToken(token: string): Promise<ResolvedInvite 
 }
 
 export async function markInviteOpened(inviteId: string): Promise<void> {
-  const invite = await inviteRepository.get(inviteId);
-  if (!invite || invite.openedAt) return;
-  await inviteRepository.update(inviteId, {
-    openedAt: new Date().toISOString(),
-    status: invite.status === "pending" ? "opened" : invite.status,
-  });
-  await recordAudit({
-    type: "invite.opened",
-    message: `Invite ${inviteId} opened by client.`,
-    clientId: invite.clientId,
-    meta: { inviteId },
-  });
+  // Best-effort. Reads + writes here are pure side effects (audit + opened
+  // timestamp) and must never crash the public review/connect page render.
+  try {
+    const invite = await inviteRepository.get(inviteId);
+    if (!invite || invite.openedAt) return;
+    await inviteRepository.update(inviteId, {
+      openedAt: new Date().toISOString(),
+      status: invite.status === "pending" ? "opened" : invite.status,
+    });
+    await recordAudit({
+      type: "invite.opened",
+      message: `Invite ${inviteId} opened by client.`,
+      clientId: invite.clientId,
+      meta: { inviteId },
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[invites] markInviteOpened(${inviteId}) failed:`,
+      err instanceof Error ? err.message : err,
+    );
+  }
 }
 
 export async function markInviteStatus(

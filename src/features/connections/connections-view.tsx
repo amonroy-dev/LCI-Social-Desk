@@ -10,7 +10,7 @@ interface ConnectionsViewProps {
   clientId: string;
   clientName: string;
   connections: SocialConnection[];
-  reconnectUrl: string;
+  reconnectUrl: string | null;
 }
 
 const PLATFORMS: SupportedNetwork[] = ["facebook", "instagram"];
@@ -47,7 +47,7 @@ export function ConnectionsView({
             platform={platform}
             connection={connection}
             clientName={clientName}
-            reconnectHref={reconnectUrl}
+            reconnectHref={reconnectUrl ?? undefined}
             onDisconnect={handleDisconnect}
           />
         );
