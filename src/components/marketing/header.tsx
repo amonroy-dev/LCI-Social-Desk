@@ -70,12 +70,6 @@ export function MarketingHeader() {
 
         <div className="hidden items-center gap-3 md:flex">
           <Link
-            href="/sign-in"
-            className="rounded-md px-3.5 py-2 text-[13.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Client Portal
-          </Link>
-          <Link
             href="/contact"
             className="inline-flex h-9 items-center rounded-lg bg-[hsl(var(--brand))] px-4 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-[hsl(var(--brand))]/90"
           >
@@ -110,12 +104,6 @@ export function MarketingHeader() {
               </Link>
             ))}
             <div className="mt-3 border-t border-border pt-3 flex flex-col gap-2">
-              <Link
-                href="/sign-in"
-                className="rounded-md px-3 py-2.5 text-[14px] font-medium text-muted-foreground hover:text-foreground"
-              >
-                Client Portal
-              </Link>
               <Link
                 href="/contact"
                 className="inline-flex h-10 items-center justify-center rounded-lg bg-[hsl(var(--brand))] px-4 text-[14px] font-semibold text-white"

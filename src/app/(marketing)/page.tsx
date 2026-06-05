@@ -202,7 +202,7 @@ export default function HomePage() {
               {
                 step: "02",
                 title: "Create & publish",
-                description: "Our team creates and schedules content across your channels. You review and approve via our client portal before anything goes live.",
+                description: "Our team creates and schedules content across your channels. You review and approve every post from a secure link we email you — no extra logins — before anything goes live.",
               },
               {
                 step: "03",
