@@ -16,7 +16,7 @@ interface PageProps {
 }
 
 export const metadata: Metadata = {
-  title: "Client Portal — Sign In",
+  title: "Team sign in — LCI Social Desk",
   robots: { index: false, follow: false },
 };
 
@@ -45,7 +45,7 @@ export default async function SignInPage({ searchParams }: PageProps) {
                 LCI Marketing
               </div>
               <div className="text-[11px] uppercase tracking-wider text-[hsl(var(--sidebar-muted))]">
-                Client Portal
+                Agency Workspace
               </div>
             </div>
           </div>

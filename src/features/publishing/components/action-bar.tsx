@@ -23,6 +23,7 @@ type Pending = "idle" | "saving" | "scheduling" | "posting";
 interface ActionBarProps {
   state: ComposerState;
   dispatch: React.Dispatch<ComposerAction>;
+  emailConfigured?: boolean;
 }
 
 async function postJSON<T>(url: string, body: unknown): Promise<T> {
@@ -38,7 +39,11 @@ async function postJSON<T>(url: string, body: unknown): Promise<T> {
   return json as T;
 }
 
-export function ActionBar({ state, dispatch }: ActionBarProps) {
+export function ActionBar({
+  state,
+  dispatch,
+  emailConfigured = false,
+}: ActionBarProps) {
   const { draft } = state;
   const client = getClient(draft.clientId);
   const [pending, setPending] = React.useState<Pending>("idle");
@@ -216,9 +221,14 @@ export function ActionBar({ state, dispatch }: ActionBarProps) {
         open={reviewOpen}
         onOpenChange={setReviewOpen}
         draft={draft}
-        onSubmitted={({ draft: updatedDraft }) => {
+        emailConfigured={emailConfigured}
+        onSubmitted={({ draft: updatedDraft, sentTo }) => {
           dispatch({ type: "merge-draft", draft: updatedDraft });
-          setLastMessage("Sent to client for review");
+          setLastMessage(
+            sentTo
+              ? `Review email sent to ${sentTo}`
+              : "Review link ready to share",
+          );
         }}
       />
     </>

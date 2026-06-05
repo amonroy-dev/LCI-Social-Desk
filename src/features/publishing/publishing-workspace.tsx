@@ -10,7 +10,13 @@ import { WorkflowsPanel } from "./components/workflows-panel";
 import { ActionBar } from "./components/action-bar";
 import { useComposer } from "./state";
 
-export function PublishingWorkspace() {
+interface PublishingWorkspaceProps {
+  emailConfigured?: boolean;
+}
+
+export function PublishingWorkspace({
+  emailConfigured = false,
+}: PublishingWorkspaceProps) {
   const [state, dispatch] = useComposer();
 
   return (
@@ -29,7 +35,11 @@ export function PublishingWorkspace() {
           <PreviewPanel state={state} />
         </aside>
       </div>
-      <ActionBar state={state} dispatch={dispatch} />
+      <ActionBar
+        state={state}
+        dispatch={dispatch}
+        emailConfigured={emailConfigured}
+      />
     </div>
   );
 }

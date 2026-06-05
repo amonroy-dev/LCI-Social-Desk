@@ -140,6 +140,70 @@ META_SCOPES=pages_show_list,pages_read_engagement,pages_manage_posts,instagram_b
 META_STATE_SECRET=
 ```
 
+### Email (Resend) — invite + client review emails
+
+```bash
+# Required to actually email invite + review links to clients. Without
+# this, the dashboard still generates copyable links and the "Send email"
+# buttons are hidden / return a 503.
+RESEND_API_KEY=
+
+# Verified sender. Format: "Display Name <you@your-domain.com>". Defaults
+# to "LCI Social Desk <noreply@resend.dev>" — fine for Resend's sandbox,
+# but production deliverability needs a verified domain in your Resend
+# dashboard.
+EMAIL_FROM="LCI Social Desk <hello@your-domain.com>"
+
+# Public agency name used in invite + review email copy.
+NEXT_PUBLIC_AGENCY_NAME=LCI
+```
+
+When `RESEND_API_KEY` is unset, the Composer's **Send for Approval**
+dialog shows only the **Copy link** action and a hint about how to enable
+direct email. With Resend configured, a **Send email** button appears
+next to it that uses `sendReviewRequestEmail` to deliver a branded message
+to the client.
+
+#### Use a Resend-hosted template instead of the built-in HTML
+
+If you'd rather design the email in the Resend dashboard (so non-engineers
+can edit copy without a deploy), create a Template in Resend, **publish
+it**, and set:
+
+```bash
+RESEND_REVIEW_TEMPLATE_ID=tmpl_xxx_or_alias    # for the client review email
+RESEND_INVITE_TEMPLATE_ID=tmpl_xxx_or_alias    # for the connection invite email
+```
+
+When either is set, that email type bypasses the built-in HTML and is
+rendered by Resend using the variables we pass.
+
+**Variables your template can reference as `{{NAME}}`:**
+
+| Email | Variables |
+| --- | --- |
+| Review | `CUSTOMER_NAME`, `CLIENT_NAME`, `AGENCY_NAME`, `NETWORKS`, `REVIEW_URL`, `CAPTION`, `SCHEDULE_DATE`, `SCHEDULE_TIME`, `SCHEDULE_LINE` |
+| Invite | `CUSTOMER_NAME`, `CLIENT_NAME`, `AGENCY_NAME`, `NETWORKS`, `INVITE_URL` |
+
+Notes:
+- `CUSTOMER_NAME` falls back to `there` when the agency leaves the reviewer
+  name blank in the Send dialog, so `Hi {{CUSTOMER_NAME}},` always reads
+  correctly.
+- `SCHEDULE_LINE` is a pre-formatted convenience like
+  `Planned to go live 2026-03-04 at 09:00.` — empty when no schedule is
+  set. Useful when your template can't conditionally render.
+- The template must be **Published** in the Resend dashboard. Drafts are
+  rejected by the API and the error is surfaced back to the dialog.
+- When a template is used, its configured Subject and From win unless
+  `EMAIL_FROM` is explicitly set.
+
+Hit `GET /api/dev/email-preview/review` (or `/invite`) during local dev
+to see the exact variable payload that will be sent and confirm whether
+template mode is active.
+
+For Cursor Cloud deployments, set these as Cloud Agent secrets in the
+dashboard so they're injected on every run.
+
 ### Optional
 
 ```bash
@@ -166,9 +230,7 @@ Firebase in Vercel, the demo button disappears in production.
 | `socialConnections` storage | ✅ (Firestore) | in-memory fallback |
 | `auditLogs` writes | ✅ (Firestore, best-effort) | in-memory ring fallback |
 | `clients` reads | ✅ (Firestore, with sample-data fallback) | sample data |
-| `socialPosts` storage | ✅ (Firestore) | in-memory fallback |
-| `postReviews` storage | ✅ (Firestore) | in-memory fallback |
-| Review token signing + lifecycle | ✅ | |
+| `socialPosts` storage | | in-memory only (next milestone) |
 
 Every Firestore-backed surface degrades gracefully to in-memory when the
 admin SDK isn't configured — local dev and unconfigured Vercel previews

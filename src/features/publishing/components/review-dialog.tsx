@@ -1,7 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { CheckCheck, Copy, ExternalLink, Loader2, Send } from "lucide-react";
+import {
+  CheckCheck,
+  Copy,
+  ExternalLink,
+  Link as LinkIcon,
+  Loader2,
+  Mail,
+  Send,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,23 +29,32 @@ interface ReviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   draft: SocialPostDraft;
+  emailConfigured: boolean;
   onSubmitted: (result: {
     url: string;
     reviewId: string;
     draft: SocialPostDraft;
+    sentTo: string | null;
   }) => void;
 }
 
 type SubmitState =
   | { phase: "idle" }
-  | { phase: "submitting" }
+  | { phase: "submitting"; action: "email" | "link" }
   | { phase: "error"; message: string }
-  | { phase: "success"; url: string; reviewId: string };
+  | {
+      phase: "success";
+      url: string;
+      reviewId: string;
+      sentTo: string | null;
+      emailError: string | null;
+    };
 
 export function ReviewDialog({
   open,
   onOpenChange,
   draft,
+  emailConfigured,
   onSubmitted,
 }: ReviewDialogProps) {
   const [contactName, setContactName] = React.useState("");
@@ -52,8 +69,15 @@ export function ReviewDialog({
     }
   }, [open]);
 
-  const submit = async () => {
-    setState({ phase: "submitting" });
+  const submit = async (action: "email" | "link") => {
+    if (action === "email" && !contactEmail.trim()) {
+      setState({
+        phase: "error",
+        message: "Enter the client's email address to send the review email.",
+      });
+      return;
+    }
+    setState({ phase: "submitting", action });
     try {
       const res = await fetch("/api/posts/request-review", {
         method: "POST",
@@ -62,6 +86,7 @@ export function ReviewDialog({
           draft,
           reviewerName: contactName.trim() || null,
           reviewerEmail: contactEmail.trim() || null,
+          sendEmail: action === "email",
         }),
       });
       const json = await res.json();
@@ -72,8 +97,19 @@ export function ReviewDialog({
         });
         return;
       }
-      setState({ phase: "success", url: json.url, reviewId: json.review.id });
-      onSubmitted({ url: json.url, reviewId: json.review.id, draft: json.draft });
+      setState({
+        phase: "success",
+        url: json.url,
+        reviewId: json.review.id,
+        sentTo: json.sentTo ?? null,
+        emailError: json.emailError ?? null,
+      });
+      onSubmitted({
+        url: json.url,
+        reviewId: json.review.id,
+        draft: json.draft,
+        sentTo: json.sentTo ?? null,
+      });
     } catch (err) {
       setState({
         phase: "error",
@@ -122,7 +158,12 @@ export function ReviewDialog({
             </div>
             <div className="space-y-1">
               <Label htmlFor="reviewer-email">
-                Client contact email (optional)
+                Client contact email{" "}
+                {emailConfigured ? (
+                  <span className="text-destructive">*</span>
+                ) : (
+                  <span className="text-muted-foreground">(optional)</span>
+                )}
               </Label>
               <Input
                 id="reviewer-email"
@@ -132,10 +173,18 @@ export function ReviewDialog({
                 placeholder="jamie@client.com"
                 disabled={state.phase === "submitting"}
               />
-              <p className="text-[11.5px] text-muted-foreground">
-                We&rsquo;ll record this on the review for your records. Sending
-                the email is handled by your account manager.
-              </p>
+              {emailConfigured ? (
+                <p className="text-[11.5px] text-muted-foreground">
+                  We&rsquo;ll email the link directly to the client via Resend.
+                </p>
+              ) : (
+                <p className="text-[11.5px] text-muted-foreground">
+                  Email isn&rsquo;t configured for this environment. Use
+                  <span className="font-medium"> Copy link </span>and send it
+                  yourself, or set <code className="font-mono">RESEND_API_KEY</code>{" "}
+                  to enable direct send.
+                </p>
+              )}
             </div>
             {state.phase === "error" ? (
               <div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-[12px] text-destructive">
@@ -145,16 +194,41 @@ export function ReviewDialog({
           </div>
         ) : (
           <div className="space-y-3">
-            <div className="flex items-start gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-[12.5px] text-emerald-800">
-              <CheckCheck className="mt-0.5 h-4 w-4" />
-              <div>
-                <div className="font-semibold">Review link ready.</div>
+            {state.sentTo ? (
+              <div className="flex items-start gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-[12.5px] text-emerald-800">
+                <Mail className="mt-0.5 h-4 w-4" />
                 <div>
-                  Share this with the client. The link expires in 7 days and
-                  records each open + decision in the audit log.
+                  <div className="font-semibold">
+                    Review email sent to {state.sentTo}.
+                  </div>
+                  <div>
+                    The link is unique to your client and expires in 7 days. The
+                    audit log records each open and decision.
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-start gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-[12.5px] text-emerald-800">
+                <CheckCheck className="mt-0.5 h-4 w-4" />
+                <div>
+                  <div className="font-semibold">Review link ready.</div>
+                  <div>
+                    Share this with the client. The link expires in 7 days and
+                    records each open + decision in the audit log.
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {state.emailError ? (
+              <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] text-amber-900">
+                <span className="font-semibold">
+                  Link created, but email failed:
+                </span>{" "}
+                {state.emailError}
+              </div>
+            ) : null}
+
             <div className="flex items-center gap-2">
               <Input
                 readOnly
@@ -193,18 +267,35 @@ export function ReviewDialog({
                 </Button>
               </DialogClose>
               <Button
-                variant="brand"
+                variant={emailConfigured ? "outline" : "brand"}
                 size="sm"
-                onClick={submit}
+                onClick={() => submit("link")}
                 disabled={state.phase === "submitting"}
               >
-                {state.phase === "submitting" ? (
+                {state.phase === "submitting" && state.action === "link" ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <Send className="h-3.5 w-3.5" />
+                  <LinkIcon className="h-3.5 w-3.5" />
                 )}
-                Generate review link
+                Copy link
               </Button>
+              {emailConfigured ? (
+                <Button
+                  variant="brand"
+                  size="sm"
+                  onClick={() => submit("email")}
+                  disabled={
+                    state.phase === "submitting" || !contactEmail.trim()
+                  }
+                >
+                  {state.phase === "submitting" && state.action === "email" ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Mail className="h-3.5 w-3.5" />
+                  )}
+                  Send email
+                </Button>
+              ) : null}
             </>
           )}
         </DialogFooter>

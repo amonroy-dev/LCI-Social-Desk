@@ -195,14 +195,11 @@ export default function ContactPage() {
                   Existing client?
                 </h3>
                 <p className="text-[13.5px] leading-relaxed text-muted-foreground">
-                  Access your content calendar, review drafts, and manage your social connections through the Client Portal.
+                  No extra accounts to manage. Your account manager emails you a secure link each time we need you to review a post or connect a social account — open it, take the action, and you&apos;re done.
                 </p>
-                <a
-                  href="/sign-in"
-                  className="mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-[hsl(var(--brand))] hover:underline"
-                >
-                  Go to Client Portal <ArrowRight className="h-3.5 w-3.5" />
-                </a>
+                <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
+                  Lost a link or have a question? Just reply to your most recent email from us, or use the form on this page and we&apos;ll get back to you.
+                </p>
               </div>
             </div>
           </div>

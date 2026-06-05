@@ -12,9 +12,6 @@ const FOOTER_NAV = {
     { label: "Results", href: "/results" },
     { label: "Contact", href: "/contact" },
   ],
-  Resources: [
-    { label: "Client Portal", href: "/sign-in" },
-  ],
 } as const;
 
 export function MarketingFooter() {
@@ -59,9 +56,16 @@ export function MarketingFooter() {
           <p className="text-[12px] text-white/40">
             &copy; {new Date().getFullYear()} LCI Marketing. All rights reserved.
           </p>
-          <p className="text-[12px] text-white/40">
-            lci-360.com
-          </p>
+          <div className="flex items-center gap-5 text-[12px] text-white/40">
+            <span>lci-360.com</span>
+            <Link
+              href="/sign-in"
+              className="transition-colors hover:text-white/80"
+              title="LCI team members only"
+            >
+              Team sign in
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
