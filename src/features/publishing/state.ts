@@ -2,7 +2,6 @@
 
 import { useReducer } from "react";
 
-import { SAMPLE_CLIENTS } from "@/lib/sample-data";
 import type {
   AuditLogEvent,
   ContentTag,
@@ -37,10 +36,10 @@ export type ComposerAction =
   | { type: "log-event"; event: AuditLogEvent }
   | { type: "toggle-panel"; panel: keyof ComposerState["panels"] };
 
-function makeInitialDraft(): SocialPostDraft {
+function makeInitialDraft(clientId: string): SocialPostDraft {
   return {
     id: "draft_local",
-    clientId: SAMPLE_CLIENTS[0].id,
+    clientId,
     networks: ["facebook", "instagram"],
     caption: "",
     firstComment: "",
@@ -53,9 +52,9 @@ function makeInitialDraft(): SocialPostDraft {
   };
 }
 
-export function initialComposerState(): ComposerState {
+export function initialComposerState(clientId: string): ComposerState {
   return {
-    draft: makeInitialDraft(),
+    draft: makeInitialDraft(clientId),
     events: [],
     panels: {
       firstComment: true,
@@ -145,6 +144,6 @@ function reducer(state: ComposerState, action: ComposerAction): ComposerState {
   }
 }
 
-export function useComposer() {
-  return useReducer(reducer, undefined, initialComposerState);
+export function useComposer(initialClientId: string) {
+  return useReducer(reducer, initialClientId, initialComposerState);
 }

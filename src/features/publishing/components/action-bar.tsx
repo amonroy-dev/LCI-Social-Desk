@@ -12,8 +12,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getClient } from "@/lib/sample-data";
-import type { ScheduleState, SocialPostDraft } from "@/lib/types";
+import type { Client, ScheduleState, SocialPostDraft } from "@/lib/types";
 import type { ComposerAction, ComposerState } from "../state";
 import { ScheduleDialog } from "./schedule-dialog";
 import { ReviewDialog } from "./review-dialog";
@@ -23,6 +22,7 @@ type Pending = "idle" | "saving" | "scheduling" | "posting";
 interface ActionBarProps {
   state: ComposerState;
   dispatch: React.Dispatch<ComposerAction>;
+  clients: Client[];
   emailConfigured?: boolean;
 }
 
@@ -42,10 +42,11 @@ async function postJSON<T>(url: string, body: unknown): Promise<T> {
 export function ActionBar({
   state,
   dispatch,
+  clients,
   emailConfigured = false,
 }: ActionBarProps) {
   const { draft } = state;
-  const client = getClient(draft.clientId);
+  const client = clients.find((c) => c.id === draft.clientId);
   const [pending, setPending] = React.useState<Pending>("idle");
   const [scheduleOpen, setScheduleOpen] = React.useState(false);
   const [reviewOpen, setReviewOpen] = React.useState(false);

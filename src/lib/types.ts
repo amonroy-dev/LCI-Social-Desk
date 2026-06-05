@@ -30,7 +30,9 @@ export type AuditEventType =
   | "review.requested"
   | "review.opened"
   | "review.approved"
-  | "review.changes_requested";
+  | "review.changes_requested"
+  | "client.created"
+  | "client.archived";
 
 export type AgencyRole = "owner" | "admin" | "member";
 
@@ -62,6 +64,20 @@ export interface Client {
   shortCode: string;
   industry: string;
   accent: string;
+  /** Primary client contact name — used to address review + invite emails. */
+  primaryContactName?: string | null;
+  /** Primary client contact email — pre-fills the review dialog. */
+  primaryContactEmail?: string | null;
+  /** Optional website URL. */
+  website?: string | null;
+  /** Internal-only notes about the client. */
+  notes?: string | null;
+  /** ISO timestamp. Present for clients created in-app (not sample data). */
+  createdAt?: string | null;
+  /** Agency user uid who added the client. */
+  createdBy?: string | null;
+  /** When set, the client is hidden from the roster + composer switcher. */
+  archivedAt?: string | null;
 }
 
 /** The two networks LCI Social Desk supports in this phase. LinkedIn is reserved. */

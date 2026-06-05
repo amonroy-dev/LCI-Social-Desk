@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import type { Client } from "@/lib/types";
 import type { ComposerAction, ComposerState } from "../state";
 import { ClientSwitcher } from "./client-switcher";
 import { ComposerToolbar } from "./composer-toolbar";
@@ -19,9 +20,10 @@ const CAPTION_LIMIT = 2200;
 interface ComposerCardProps {
   state: ComposerState;
   dispatch: React.Dispatch<ComposerAction>;
+  clients: Client[];
 }
 
-export function ComposerCard({ state, dispatch }: ComposerCardProps) {
+export function ComposerCard({ state, dispatch, clients }: ComposerCardProps) {
   const { draft } = state;
   const captionLength = draft.caption.length;
   const overLimit = captionLength > CAPTION_LIMIT;
@@ -45,6 +47,7 @@ export function ComposerCard({ state, dispatch }: ComposerCardProps) {
         <div className="flex items-center gap-3">
           <ClientSwitcher
             clientId={draft.clientId}
+            clients={clients}
             onChange={(clientId) => dispatch({ type: "set-client", clientId })}
           />
           <Separator orientation="vertical" className="h-7" />

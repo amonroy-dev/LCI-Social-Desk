@@ -11,18 +11,42 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+
 import { cn } from "@/lib/utils";
-import { SAMPLE_CLIENTS } from "@/lib/sample-data";
 import type { Client } from "@/lib/types";
 
 interface ClientSwitcherProps {
   clientId: string;
+  clients: Client[];
   onChange: (clientId: string) => void;
 }
 
-export function ClientSwitcher({ clientId, onChange }: ClientSwitcherProps) {
+export function ClientSwitcher({ clientId, clients, onChange }: ClientSwitcherProps) {
   const active =
-    SAMPLE_CLIENTS.find((c) => c.id === clientId) ?? SAMPLE_CLIENTS[0];
+    clients.find((c) => c.id === clientId) ?? clients[0] ?? null;
+
+  if (!active) {
+    return (
+      <Link
+        href="/dashboard/clients"
+        className="group flex items-center gap-2 rounded-md border border-dashed border-border bg-card px-2 py-1.5 text-left text-sm transition-colors hover:bg-muted/60"
+      >
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-muted text-muted-foreground">
+          <Plus className="h-3.5 w-3.5" />
+        </span>
+        <div className="flex min-w-0 flex-col leading-tight">
+          <span className="truncate text-[13px] font-medium text-foreground">
+            Add a client
+          </span>
+          <span className="truncate text-[11px] text-muted-foreground">
+            No clients yet
+          </span>
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <DropdownMenu>
@@ -33,7 +57,7 @@ export function ClientSwitcher({ clientId, onChange }: ClientSwitcherProps) {
             {active.name}
           </span>
           <span className="truncate text-[11px] text-muted-foreground">
-            {active.industry} · Client account
+            {active.industry || "Industry not set"} · Client account
           </span>
         </div>
         <ChevronDown className="ml-1 h-3.5 w-3.5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
@@ -41,7 +65,7 @@ export function ClientSwitcher({ clientId, onChange }: ClientSwitcherProps) {
       <DropdownMenuContent align="start" className="w-[260px]">
         <DropdownMenuLabel>Client accounts</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {SAMPLE_CLIENTS.map((c) => {
+        {clients.map((c) => {
           const isActive = c.id === active.id;
           return (
             <DropdownMenuItem
@@ -55,7 +79,7 @@ export function ClientSwitcher({ clientId, onChange }: ClientSwitcherProps) {
                   {c.name}
                 </span>
                 <span className="truncate text-[11px] text-muted-foreground">
-                  {c.industry}
+                  {c.industry || "Industry not set"}
                 </span>
               </div>
               {isActive ? (
@@ -64,6 +88,13 @@ export function ClientSwitcher({ clientId, onChange }: ClientSwitcherProps) {
             </DropdownMenuItem>
           );
         })}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard/clients" className="gap-2 text-[hsl(var(--brand))]">
+            <Plus className="h-3.5 w-3.5" />
+            Add a client
+          </Link>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
