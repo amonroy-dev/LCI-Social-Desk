@@ -189,20 +189,29 @@ export async function resolveReviewToken(
 }
 
 export async function markReviewOpened(reviewId: string): Promise<void> {
-  const review = await reviewRepository.get(reviewId);
-  if (!review || review.openedAt) return;
-  const nextStatus =
-    review.status === "pending" ? "opened" : review.status;
-  await reviewRepository.update(reviewId, {
-    openedAt: new Date().toISOString(),
-    status: nextStatus,
-  });
-  await recordAudit({
-    type: "review.opened",
-    message: `Review ${reviewId} opened by client.`,
-    clientId: review.clientId,
-    meta: { reviewId, postId: review.postId },
-  });
+  // Best-effort. Must never crash the public /review/[token] page render.
+  try {
+    const review = await reviewRepository.get(reviewId);
+    if (!review || review.openedAt) return;
+    const nextStatus =
+      review.status === "pending" ? "opened" : review.status;
+    await reviewRepository.update(reviewId, {
+      openedAt: new Date().toISOString(),
+      status: nextStatus,
+    });
+    await recordAudit({
+      type: "review.opened",
+      message: `Review ${reviewId} opened by client.`,
+      clientId: review.clientId,
+      meta: { reviewId, postId: review.postId },
+    });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[reviews] markReviewOpened(${reviewId}) failed:`,
+      err instanceof Error ? err.message : err,
+    );
+  }
 }
 
 export interface SubmitDecisionInput {

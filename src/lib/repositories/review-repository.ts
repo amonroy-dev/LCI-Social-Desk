@@ -68,12 +68,15 @@ export const reviewRepository = {
     if (!db) return memory.get(id) ?? null;
     try {
       const snap = await db.collection(COLLECTION).doc(id).get();
-      if (!snap.exists) return null;
+      if (!snap.exists) return memory.get(id) ?? null;
       return fromDoc(snap.id, snap.data() ?? {});
     } catch (err) {
       const e = classifyFirestoreError(err);
-      if (e.kind === "not-found") return null;
-      throw new Error(`Could not load review (${e.kind}): ${e.message}`);
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[reviews] get(${id}) failed: ${e.kind} ${e.message} — falling back to in-memory`,
+      );
+      return memory.get(id) ?? null;
     }
   },
 
@@ -107,7 +110,16 @@ export const reviewRepository = {
       return snap.docs.map((d) => fromDoc(d.id, d.data()));
     } catch (err) {
       const e = classifyFirestoreError(err);
-      throw new Error(`Could not list reviews (${e.kind}): ${e.message}`);
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[reviews] list failed: ${e.kind} ${e.message} — falling back to in-memory`,
+      );
+      let all = Array.from(memory.values()).sort((a, b) =>
+        a.createdAt < b.createdAt ? 1 : -1,
+      );
+      if (filters.clientId) all = all.filter((r) => r.clientId === filters.clientId);
+      if (filters.postId) all = all.filter((r) => r.postId === filters.postId);
+      return all;
     }
   },
 

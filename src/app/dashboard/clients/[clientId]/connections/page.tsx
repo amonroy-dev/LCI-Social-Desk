@@ -32,16 +32,26 @@ export default async function ClientConnectionsPage({ params }: PageProps) {
   // Pre-mint an agency-initiated invite token so the Reconnect button on the
   // status cards can deep-link straight into the Meta OAuth handoff. This
   // doesn't surface the link to a client — it stays inside the dashboard.
-  const reconnect = await createInvite(
-    {
-      clientId: client.id,
-      allowedNetworks: ["facebook", "instagram"],
-      ttlMs: 60 * 60 * 1000,
-    },
-    session,
-  );
-
-  const reconnectUrl = `/api/oauth/meta/start?token=${encodeURIComponent(reconnect.token)}`;
+  // Best-effort: if Firestore writes are failing this should not crash the
+  // whole page render; we just hide the Reconnect deep-link.
+  let reconnectUrl: string | null = null;
+  try {
+    const reconnect = await createInvite(
+      {
+        clientId: client.id,
+        allowedNetworks: ["facebook", "instagram"],
+        ttlMs: 60 * 60 * 1000,
+      },
+      session,
+    );
+    reconnectUrl = `/api/oauth/meta/start?token=${encodeURIComponent(reconnect.token)}`;
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `[connections-page] could not pre-mint reconnect invite for ${client.id}:`,
+      err instanceof Error ? err.message : err,
+    );
+  }
   const baseUrl = getAppBaseUrl();
 
   return (
