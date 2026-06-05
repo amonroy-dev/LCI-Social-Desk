@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NetworkIcon } from "@/components/network/network-icon";
-import { getClient } from "@/lib/sample-data";
+import type { Client } from "@/lib/types";
 import type { ComposerState } from "../state";
 import { FacebookPreview } from "./preview/facebook-preview";
 import { InstagramPreview } from "./preview/instagram-preview";
@@ -16,11 +16,12 @@ import { LinkedInPreview } from "./preview/linkedin-preview";
 
 interface PreviewPanelProps {
   state: ComposerState;
+  clients: Client[];
 }
 
-export function PreviewPanel({ state }: PreviewPanelProps) {
+export function PreviewPanel({ state, clients }: PreviewPanelProps) {
   const { draft } = state;
-  const client = getClient(draft.clientId);
+  const client = clients.find((c) => c.id === draft.clientId);
 
   return (
     <section className="flex h-full flex-col">
