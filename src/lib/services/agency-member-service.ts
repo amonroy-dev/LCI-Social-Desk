@@ -4,6 +4,7 @@ import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
   COLLECTIONS,
   classifyFirestoreError,
+  normalizeFirestoreTimestamp,
 } from "@/lib/firebase/firestore-helpers";
 import { resolveRoleForEmail } from "@/lib/auth/roles";
 import type { AgencyRole, AgencyUser } from "@/lib/types";
@@ -32,8 +33,8 @@ function fromDoc(uid: string, data: Record<string, unknown>): AgencyUser {
     email: normalizeEmail(String(data.email ?? "")),
     role: (data.role as AgencyRole) ?? "member",
     active: Boolean(data.active ?? true),
-    createdAt: String(data.createdAt ?? new Date().toISOString()),
-    lastLoginAt: (data.lastLoginAt as string | null) ?? null,
+    createdAt: normalizeFirestoreTimestamp(data.createdAt) ?? new Date().toISOString(),
+    lastLoginAt: normalizeFirestoreTimestamp(data.lastLoginAt),
     avatarUrl: (data.avatarUrl as string | null) ?? null,
   };
 }

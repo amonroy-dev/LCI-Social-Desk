@@ -4,6 +4,7 @@ import type { PostReview } from "@/lib/types";
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
   classifyFirestoreError,
+  normalizeFirestoreTimestamp,
 } from "@/lib/firebase/firestore-helpers";
 
 /**
@@ -38,11 +39,11 @@ function fromDoc(id: string, data: Record<string, unknown>): PostReview {
     reviewerEmail: (data.reviewerEmail as string | null) ?? null,
     reviewerName: (data.reviewerName as string | null) ?? null,
     status: (data.status as PostReview["status"]) ?? "pending",
-    expiresAt: String(data.expiresAt ?? ""),
-    createdAt: String(data.createdAt ?? ""),
+    expiresAt: normalizeFirestoreTimestamp(data.expiresAt) ?? "",
+    createdAt: normalizeFirestoreTimestamp(data.createdAt) ?? "",
     createdBy: String(data.createdBy ?? ""),
-    openedAt: (data.openedAt as string | null) ?? null,
-    decidedAt: (data.decidedAt as string | null) ?? null,
+    openedAt: normalizeFirestoreTimestamp(data.openedAt),
+    decidedAt: normalizeFirestoreTimestamp(data.decidedAt),
     history: ((data.history as PostReview["history"]) ?? []) as PostReview["history"],
   };
 }

@@ -5,6 +5,7 @@ import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
   COLLECTIONS,
   classifyFirestoreError,
+  normalizeFirestoreTimestamp,
 } from "@/lib/firebase/firestore-helpers";
 
 /**
@@ -38,10 +39,10 @@ function fromDoc(
     status: (data.status as SocialConnection["status"]) ?? "pending",
     scopes: ((data.scopes as string[] | undefined) ?? []) as string[],
     connectedBy: (data.connectedBy as string | null) ?? null,
-    connectedAt: (data.connectedAt as string | null) ?? null,
-    expiresAt: (data.expiresAt as string | null) ?? null,
-    createdAt: String(data.createdAt ?? ""),
-    updatedAt: String(data.updatedAt ?? ""),
+    connectedAt: normalizeFirestoreTimestamp(data.connectedAt),
+    expiresAt: normalizeFirestoreTimestamp(data.expiresAt),
+    createdAt: normalizeFirestoreTimestamp(data.createdAt) ?? "",
+    updatedAt: normalizeFirestoreTimestamp(data.updatedAt) ?? "",
     publishingReady: Boolean(data.publishingReady ?? false),
     note: (data.note as string | null) ?? null,
   };

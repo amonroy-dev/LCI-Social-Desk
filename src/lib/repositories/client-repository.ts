@@ -4,6 +4,7 @@ import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
   COLLECTIONS,
   classifyFirestoreError,
+  normalizeFirestoreTimestamp,
 } from "@/lib/firebase/firestore-helpers";
 import { SAMPLE_CLIENTS } from "@/lib/sample-data";
 import type { Client } from "@/lib/types";
@@ -41,9 +42,9 @@ function fromDoc(id: string, data: Record<string, unknown>): Client {
     primaryContactEmail: (data.primaryContactEmail as string | null) ?? null,
     website: (data.website as string | null) ?? null,
     notes: (data.notes as string | null) ?? null,
-    createdAt: (data.createdAt as string | null) ?? null,
+    createdAt: normalizeFirestoreTimestamp(data.createdAt),
     createdBy: (data.createdBy as string | null) ?? null,
-    archivedAt: (data.archivedAt as string | null) ?? null,
+    archivedAt: normalizeFirestoreTimestamp(data.archivedAt),
   };
 }
 

@@ -24,6 +24,48 @@ export class FirestorePermissionError extends Error {
   }
 }
 
+export function normalizeFirestoreTimestamp(value: unknown): string | null {
+  if (typeof value === "string") return value;
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === "number") return new Date(value).toISOString();
+  if (value === null || value === undefined) return null;
+
+  if (typeof value === "object") {
+    const candidate = value as {
+      toDate?: () => Date;
+      seconds?: number;
+      _seconds?: number;
+      nanoseconds?: number;
+      _nanoseconds?: number;
+    };
+
+    if (typeof candidate.toDate === "function") {
+      try {
+        return candidate.toDate().toISOString();
+      } catch {
+        return null;
+      }
+    }
+
+    const seconds = typeof candidate.seconds === "number"
+      ? candidate.seconds
+      : typeof candidate._seconds === "number"
+      ? candidate._seconds
+      : null;
+    const nanoseconds = typeof candidate.nanoseconds === "number"
+      ? candidate.nanoseconds
+      : typeof candidate._nanoseconds === "number"
+      ? candidate._nanoseconds
+      : 0;
+
+    if (seconds !== null) {
+      return new Date(seconds * 1000 + Math.floor(nanoseconds / 1_000_000)).toISOString();
+    }
+  }
+
+  return null;
+}
+
 interface MaybeFirestoreError {
   code?: number | string;
   message?: string;

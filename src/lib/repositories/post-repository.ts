@@ -5,6 +5,7 @@ import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
   COLLECTIONS,
   classifyFirestoreError,
+  normalizeFirestoreTimestamp,
 } from "@/lib/firebase/firestore-helpers";
 
 /**
@@ -44,9 +45,9 @@ function fromDoc(id: string, data: Record<string, unknown>): SocialPostDraft {
       time: null,
     },
     status: (data.status as SocialPostDraft["status"]) ?? "draft",
-    updatedAt: String(data.updatedAt ?? ""),
+    updatedAt: normalizeFirestoreTimestamp(data.updatedAt) ?? "",
     reviewId: (data.reviewId as string | null) ?? null,
-    submittedForReviewAt: (data.submittedForReviewAt as string | null) ?? null,
+    submittedForReviewAt: normalizeFirestoreTimestamp(data.submittedForReviewAt),
     lastReviewDecision:
       (data.lastReviewDecision as SocialPostDraft["lastReviewDecision"]) ?? null,
   };
