@@ -26,8 +26,8 @@ export function PublishingWorkspace({
   const [state, dispatch] = useComposer(initialClientId, initialSchedule);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-0 lg:grid-cols-[minmax(0,1.55fr)_minmax(360px,1fr)] xl:grid-cols-[minmax(0,1.7fr)_minmax(380px,1fr)]">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="grid min-h-0 flex-1 overflow-hidden grid-cols-1 gap-0 lg:grid-cols-[minmax(0,1.55fr)_minmax(360px,1fr)] xl:grid-cols-[minmax(0,1.7fr)_minmax(380px,1fr)]">
         <section className="min-w-0 flex min-h-0 flex-col overflow-hidden px-6 pb-2 pt-5 lg:border-r lg:border-border">
           <div className="flex min-h-0 flex-1 flex-col overflow-auto">
             <div className="mx-auto flex max-w-3xl flex-col gap-3">
