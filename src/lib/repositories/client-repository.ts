@@ -2,9 +2,9 @@ import "server-only";
 
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
-  COLLECTIONS,
-  classifyFirestoreError,
-  normalizeFirestoreTimestamp,
+    COLLECTIONS,
+    classifyFirestoreError,
+    normalizeFirestoreTimestamp,
 } from "@/lib/firebase/firestore-helpers";
 import { SAMPLE_CLIENTS } from "@/lib/sample-data";
 import type { Client } from "@/lib/types";

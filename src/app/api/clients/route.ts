@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { getCurrentSession } from "@/lib/auth/server";
 import {
+  archiveClient,
   createClient,
   loadClients,
   type CreateClientInput,
@@ -49,6 +50,43 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Could not add client.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}
+
+interface ArchiveClientBody {
+  action?: "archive";
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await getCurrentSession();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = (await req.json().catch(() => ({}))) as ArchiveClientBody;
+  if (body.action !== "archive") {
+    return NextResponse.json(
+      { error: "Missing or invalid action." },
+      { status: 400 },
+    );
+  }
+
+  const url = new URL(req.url);
+  const clientId = url.searchParams.get("clientId");
+  if (!clientId) {
+    return NextResponse.json(
+      { error: "Client ID is required." },
+      { status: 400 },
+    );
+  }
+
+  try {
+    await archiveClient(clientId, session);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Could not archive client.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

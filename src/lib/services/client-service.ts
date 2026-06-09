@@ -127,3 +127,26 @@ export async function createClient(
 
   return { client };
 }
+
+export async function archiveClient(
+  clientId: string,
+  actor: SessionUser,
+): Promise<void> {
+  const client = await clientRepository.get(clientId);
+  if (!client) {
+    throw new Error("Client not found.");
+  }
+  if (client.archivedAt) {
+    throw new Error("Client is already archived.");
+  }
+
+  const now = new Date().toISOString();
+  await clientRepository.update(clientId, { archivedAt: now });
+
+  await recordAudit({
+    type: "client.archived",
+    message: `Client "${client.name}" archived by ${actor.email}.`,
+    actorUid: actor.uid,
+    clientId: client.id,
+  });
+}

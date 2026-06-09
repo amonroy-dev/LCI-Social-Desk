@@ -1,12 +1,12 @@
 import "server-only";
 
+import { resolveRoleForEmail } from "@/lib/auth/roles";
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
-  COLLECTIONS,
-  classifyFirestoreError,
-  normalizeFirestoreTimestamp,
+    COLLECTIONS,
+    classifyFirestoreError,
+    normalizeFirestoreTimestamp,
 } from "@/lib/firebase/firestore-helpers";
-import { resolveRoleForEmail } from "@/lib/auth/roles";
 import type { AgencyRole, AgencyUser } from "@/lib/types";
 
 /**

@@ -1,12 +1,12 @@
 import "server-only";
 
-import type { ClientInvite } from "@/lib/types";
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
-  COLLECTIONS,
-  classifyFirestoreError,
-  normalizeFirestoreTimestamp,
+    COLLECTIONS,
+    classifyFirestoreError,
+    normalizeFirestoreTimestamp,
 } from "@/lib/firebase/firestore-helpers";
+import type { ClientInvite } from "@/lib/types";
 
 /**
  * Repository for clientInvites. Reads/writes Firestore when the admin SDK is

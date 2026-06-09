@@ -1,12 +1,12 @@
 import "server-only";
 
-import type { SocialConnection, SupportedNetwork } from "@/lib/types";
 import { getAdminFirestore } from "@/lib/firebase/admin";
 import {
-  COLLECTIONS,
-  classifyFirestoreError,
-  normalizeFirestoreTimestamp,
+    COLLECTIONS,
+    classifyFirestoreError,
+    normalizeFirestoreTimestamp,
 } from "@/lib/firebase/firestore-helpers";
+import type { SocialConnection, SupportedNetwork } from "@/lib/types";
 
 /**
  * Repository for socialConnections. Stores at most one document per

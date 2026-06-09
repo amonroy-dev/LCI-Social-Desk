@@ -3,11 +3,19 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, Building2, Link2, Plus } from "lucide-react";
+import { Archive, ArrowUpRight, Building2, Link2, Plus } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ClientChip } from "@/features/publishing/components/client-switcher";
 import { AddClientDialog } from "@/features/clients/add-client-dialog";
 import type { Client, SocialConnection } from "@/lib/types";
@@ -26,6 +34,9 @@ export function ClientsRoster({ rows: initialRows }: ClientsRosterProps) {
   const [open, setOpen] = React.useState(false);
   const [rows, setRows] = React.useState<ClientRosterRow[]>(initialRows);
   const [highlightId, setHighlightId] = React.useState<string | null>(null);
+  const [archiveDialogOpen, setArchiveDialogOpen] = React.useState(false);
+  const [archiveTarget, setArchiveTarget] = React.useState<Client | null>(null);
+  const [archiving, setArchiving] = React.useState(false);
 
   React.useEffect(() => {
     setRows(initialRows);
@@ -42,6 +53,37 @@ export function ClientsRoster({ rows: initialRows }: ClientsRosterProps) {
     // client too (composer switcher, approvals page, etc).
     router.refresh();
     setTimeout(() => setHighlightId(null), 2400);
+  };
+
+  const onArchiveClick = (client: Client) => {
+    setArchiveTarget(client);
+    setArchiveDialogOpen(true);
+  };
+
+  const onConfirmArchive = async () => {
+    if (!archiveTarget) return;
+    setArchiving(true);
+    try {
+      const res = await fetch("/api/clients?clientId=" + encodeURIComponent(archiveTarget.id), {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "archive" }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Could not archive client.");
+      }
+      // Remove from list
+      setRows((prev) => prev.filter((r) => r.client.id !== archiveTarget.id));
+      router.refresh();
+      setArchiveDialogOpen(false);
+      setArchiveTarget(null);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to archive client.";
+      alert(message);
+    } finally {
+      setArchiving(false);
+    }
   };
 
   return (
@@ -116,14 +158,22 @@ export function ClientsRoster({ rows: initialRows }: ClientsRosterProps) {
                       Instagram · {ig?.status ?? "not connected"}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <Button asChild variant="outline" size="sm">
+                  <div className="flex items-center justify-between gap-2">
+                    <Button asChild variant="outline" size="sm" className="flex-1">
                       <Link
                         href={`/dashboard/clients/${client.id}/connections`}
                       >
                         <Link2 className="h-3.5 w-3.5" />
                         Manage connections
                       </Link>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onArchiveClick(client)}
+                      title="Archive this client"
+                    >
+                      <Archive className="h-3.5 w-3.5" />
                     </Button>
                     <Link
                       href={`/dashboard/clients/${client.id}/connections`}
@@ -145,6 +195,35 @@ export function ClientsRoster({ rows: initialRows }: ClientsRosterProps) {
         onOpenChange={setOpen}
         onCreated={onCreated}
       />
+
+      <Dialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Archive client?</DialogTitle>
+            <DialogDescription>
+              Archive &ldquo;{archiveTarget?.name}&rdquo; to hide it from the
+              client list. All posts, connections, and history remain. You
+              cannot undo this from the UI.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setArchiveDialogOpen(false)}
+              disabled={archiving}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={onConfirmArchive}
+              disabled={archiving}
+            >
+              {archiving ? "Archiving..." : "Archive"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
