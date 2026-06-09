@@ -12,7 +12,7 @@ import {
 import { SignInForm } from "@/features/auth/sign-in-form";
 
 interface PageProps {
-  searchParams: Promise<{ next?: string; reason?: string }>;
+  searchParams: { next?: string; reason?: string };
 }
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function SignInPage({ searchParams }: PageProps) {
-  const { next, reason } = await searchParams;
+  const { next, reason } = searchParams;
   const session = await getCurrentSession();
   if (session) {
     redirect(next || "/dashboard/publishing/new");
