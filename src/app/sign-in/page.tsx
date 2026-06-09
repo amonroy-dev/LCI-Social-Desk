@@ -1,18 +1,18 @@
+import { Lock } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Lock } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { SignInForm } from "@/features/auth/sign-in-form";
 import { getCurrentSession } from "@/lib/auth/server";
 import {
-  isDemoModeEnabled,
-  isFirebaseClientConfigured,
+    isDemoModeEnabled,
+    isFirebaseClientConfigured,
 } from "@/lib/firebase/config";
-import { SignInForm } from "@/features/auth/sign-in-form";
 
 interface PageProps {
-  searchParams: { next?: string; reason?: string };
+  searchParams: Promise<{ next?: string; reason?: string }>;
 }
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function SignInPage({ searchParams }: PageProps) {
-  const { next, reason } = searchParams;
+  const { next, reason } = await searchParams;
   const session = await getCurrentSession();
   if (session) {
     redirect(next || "/dashboard/publishing/new");
