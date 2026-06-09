@@ -3,7 +3,6 @@
 import * as React from "react";
 import { Bookmark, Heart, MessageCircle, MoreHorizontal, Send } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
 import { NetworkIcon } from "@/components/network/network-icon";
 import type { Client, MediaAsset } from "@/lib/types";
 import { CaptionParagraph, PreviewAvatar, PreviewMedia } from "./preview-shared";
@@ -21,7 +20,7 @@ export function InstagramPreview({
 }: InstagramPreviewProps) {
   const hero = media[0];
   return (
-    <Card className="overflow-hidden">
+    <div className="overflow-hidden">
       <header className="flex items-center justify-between px-4 py-2.5">
         <div className="flex min-w-0 items-center gap-2.5">
           <PreviewAvatar name={client.name} accent={client.accent} />
@@ -69,6 +68,6 @@ export function InstagramPreview({
         </p>
         <CaptionParagraph text={caption} />
       </div>
-    </Card>
+    </div>
   );
 }

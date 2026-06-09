@@ -9,7 +9,6 @@ import {
   ThumbsUp,
 } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
 import { NetworkIcon } from "@/components/network/network-icon";
 import { formatPreviewTimestamp } from "@/lib/utils";
 import type { Client, MediaAsset } from "@/lib/types";
@@ -24,7 +23,7 @@ interface LinkedInPreviewProps {
 export function LinkedInPreview({ client, caption, media }: LinkedInPreviewProps) {
   const hero = media[0];
   return (
-    <Card className="overflow-hidden">
+    <div className="overflow-hidden">
       <header className="flex items-start justify-between px-4 pb-2 pt-3.5">
         <div className="flex min-w-0 items-start gap-2.5">
           <PreviewAvatar name={client.name} accent={client.accent} />
@@ -72,7 +71,7 @@ export function LinkedInPreview({ client, caption, media }: LinkedInPreviewProps
         <ActionButton icon={<Repeat2 className="h-3.5 w-3.5" />} label="Repost" />
         <ActionButton icon={<Send className="h-3.5 w-3.5" />} label="Send" />
       </div>
-    </Card>
+    </div>
   );
 }
 

@@ -3,7 +3,6 @@
 import * as React from "react";
 import { Globe2, MessageCircle, MoreHorizontal, Share2, ThumbsUp } from "lucide-react";
 
-import { Card } from "@/components/ui/card";
 import { NetworkIcon } from "@/components/network/network-icon";
 import { formatPreviewTimestamp } from "@/lib/utils";
 import type { Client, MediaAsset } from "@/lib/types";
@@ -18,7 +17,7 @@ interface FacebookPreviewProps {
 export function FacebookPreview({ client, caption, media }: FacebookPreviewProps) {
   const hero = media[0];
   return (
-    <Card className="overflow-hidden">
+    <div className="overflow-hidden">
       <header className="flex items-center justify-between px-4 pb-2 pt-3.5">
         <PreviewHeader client={client} />
         <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
@@ -39,7 +38,7 @@ export function FacebookPreview({ client, caption, media }: FacebookPreviewProps
         <ActionButton icon={<MessageCircle className="h-3.5 w-3.5" />} label="Comment" />
         <ActionButton icon={<Share2 className="h-3.5 w-3.5" />} label="Share" />
       </div>
-    </Card>
+    </div>
   );
 }
 

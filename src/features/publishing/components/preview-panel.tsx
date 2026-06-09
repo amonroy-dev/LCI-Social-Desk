@@ -24,26 +24,28 @@ export function PreviewPanel({ state, clients }: PreviewPanelProps) {
   const client = clients.find((c) => c.id === draft.clientId);
 
   return (
-    <section className="flex h-full flex-col">
+    <section className="flex h-full flex-col overflow-hidden">
       <Tabs defaultValue="network" className="flex h-full flex-col">
-        <div className="flex items-center justify-between gap-3 pb-3">
-          <TabsList>
-            <TabsTrigger value="network" className="gap-1.5">
-              <Eye className="h-3.5 w-3.5" />
-              Network Preview
-            </TabsTrigger>
-            <TabsTrigger value="ai" className="gap-1.5">
-              <Sparkles className="h-3.5 w-3.5" />
-              AI Assist
-            </TabsTrigger>
-          </TabsList>
-          <Badge variant="outline" className="gap-1">
-            Live
-          </Badge>
+        <div className="sticky top-0 z-10 border-b border-border bg-muted/30 pb-3 backdrop-blur-sm">
+          <div className="flex items-center justify-between gap-3 py-3 px-0.5">
+            <TabsList className="gap-1.5">
+              <TabsTrigger value="network" className="gap-1.5">
+                <Eye className="h-3.5 w-3.5" />
+                Network Preview
+              </TabsTrigger>
+              <TabsTrigger value="ai" className="gap-1.5">
+                <Sparkles className="h-3.5 w-3.5" />
+                AI Assist
+              </TabsTrigger>
+            </TabsList>
+            <Badge variant="outline" className="gap-1">
+              Live
+            </Badge>
+          </div>
         </div>
 
-        <TabsContent value="network" className="m-0 flex-1">
-          <header className="mb-3 flex items-center justify-between">
+        <TabsContent value="network" className="m-0 flex-1 overflow-hidden">
+          <div className="mb-3 flex items-center justify-between">
             <div>
               <h2 className="text-[13px] font-semibold tracking-tight text-foreground">
                 Network Preview
@@ -53,12 +55,18 @@ export function PreviewPanel({ state, clients }: PreviewPanelProps) {
                 published. Final appearance may vary by platform.
               </p>
             </div>
-          </header>
+          </div>
 
-          <div className="space-y-3 pb-6">
+          <div className="flex h-full min-h-0 flex-col overflow-auto space-y-3 pb-6">
             {draft.networks.length === 0 ? (
               <Card className="border-dashed bg-muted/40 p-6 text-center text-[12px] text-muted-foreground">
-                Select at least one network to see previews.
+                <div className="mb-2 text-[14px] font-semibold text-foreground">
+                  Start your post to preview it.
+                </div>
+                <div className="max-w-sm mx-auto text-sm leading-6 text-muted-foreground">
+                  Choose a network, add your caption, and attach media to see how the
+                  post will look in the Facebook, Instagram, or LinkedIn preview.
+                </div>
               </Card>
             ) : null}
 
@@ -146,12 +154,12 @@ function PreviewSection({
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <div className="mb-1.5 flex items-center gap-1.5 px-0.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+    <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+      <div className="flex items-center gap-1.5 border-b border-border px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
         <NetworkIcon network={networkId} />
         {label}
       </div>
-      {children}
-    </div>
+      <div className="p-4">{children}</div>
+    </section>
   );
 }
