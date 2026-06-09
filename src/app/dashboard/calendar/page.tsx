@@ -1,24 +1,18 @@
-import { TopBar } from "@/components/shell/top-bar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { postRepository } from "@/lib/repositories/post-repository";
+import { loadClients } from "@/lib/services/client-service";
+import { CalendarClient } from "@/features/calendar/calendar-client";
 
-export default function CalendarPage() {
-  return (
-    <>
-      <TopBar
-        title="Calendar"
-        subtitle="Cross-client schedule view. Coming in a later iteration."
-      />
-      <main className="flex-1 overflow-auto px-6 py-5">
-        <Card>
-          <CardHeader>
-            <CardTitle>Schedule overview</CardTitle>
-          </CardHeader>
-          <CardContent className="text-[12px] text-muted-foreground">
-            The full calendar surface — including week and month views with
-            cross-client filtering — is part of the next milestone.
-          </CardContent>
-        </Card>
-      </main>
-    </>
-  );
+export const metadata = {
+  title: "Calendar — LCI Social Desk",
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function CalendarPage() {
+  const [clients, posts] = await Promise.all([
+    loadClients(),
+    postRepository.list(),
+  ]);
+
+  return <CalendarClient initialPosts={posts} clients={clients} />;
 }

@@ -36,7 +36,10 @@ export type ComposerAction =
   | { type: "log-event"; event: AuditLogEvent }
   | { type: "toggle-panel"; panel: keyof ComposerState["panels"] };
 
-function makeInitialDraft(clientId: string): SocialPostDraft {
+function makeInitialDraft(
+  clientId: string,
+  initialSchedule?: ScheduleState,
+): SocialPostDraft {
   return {
     id: "draft_local",
     clientId,
@@ -46,15 +49,18 @@ function makeInitialDraft(clientId: string): SocialPostDraft {
     tags: [],
     media: [],
     isDraft: true,
-    schedule: { date: null, time: null },
+    schedule: initialSchedule ?? { date: null, time: null },
     status: "draft",
     updatedAt: new Date().toISOString(),
   };
 }
 
-export function initialComposerState(clientId: string): ComposerState {
+export function initialComposerState(
+  clientId: string,
+  initialSchedule?: ScheduleState,
+): ComposerState {
   return {
-    draft: makeInitialDraft(clientId),
+    draft: makeInitialDraft(clientId, initialSchedule),
     events: [],
     panels: {
       firstComment: true,
@@ -144,6 +150,11 @@ function reducer(state: ComposerState, action: ComposerAction): ComposerState {
   }
 }
 
-export function useComposer(initialClientId: string) {
-  return useReducer(reducer, initialClientId, initialComposerState);
+export function useComposer(
+  initialClientId: string,
+  initialSchedule?: ScheduleState,
+) {
+  return useReducer(reducer, initialClientId, (id) =>
+    initialComposerState(id, initialSchedule),
+  );
 }

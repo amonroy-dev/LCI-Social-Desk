@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import type { Client } from "@/lib/types";
+import type { Client, ScheduleState } from "@/lib/types";
 import { ComposerCard } from "./components/composer-card";
 import { FirstCommentPanel } from "./components/first-comment-panel";
 import { PreviewPanel } from "./components/preview-panel";
@@ -14,14 +14,16 @@ import { useComposer } from "./state";
 interface PublishingWorkspaceProps {
   clients: Client[];
   emailConfigured?: boolean;
+  initialSchedule?: ScheduleState;
 }
 
 export function PublishingWorkspace({
   clients,
   emailConfigured = false,
+  initialSchedule,
 }: PublishingWorkspaceProps) {
   const initialClientId = clients[0]?.id ?? "";
-  const [state, dispatch] = useComposer(initialClientId);
+  const [state, dispatch] = useComposer(initialClientId, initialSchedule);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">

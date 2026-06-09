@@ -14,7 +14,17 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function NewDraftPage() {
+export default async function NewDraftPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string>>;
+}) {
+  const params = await searchParams;
+  const dateParam = params.date;
+  const initialSchedule = dateParam
+    ? { date: dateParam, time: null }
+    : undefined;
+
   const clients = await loadClients();
 
   if (clients.length === 0) {
@@ -57,6 +67,7 @@ export default async function NewDraftPage() {
       <PublishingWorkspace
         clients={clients}
         emailConfigured={isEmailConfigured()}
+        initialSchedule={initialSchedule}
       />
     </>
   );
