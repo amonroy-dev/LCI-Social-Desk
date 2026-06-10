@@ -20,6 +20,7 @@ export interface AnalyticsTotals {
   engagements: PerPlatformTotals;
   audienceGrowth: PerPlatformTotals;
   engagementRate: PerPlatformTotals;
+  videoViews: PerPlatformTotals;
   postLinkClicks: { total: number; totalChange: number };
 }
 
@@ -28,6 +29,7 @@ export interface AnalyticsResponse {
   engagements: DayPoint[];
   audienceGrowth: DayPoint[];
   engagementRate: DayPoint[];
+  videoViews: DayPoint[];
   totals: AnalyticsTotals;
   fbConnected: boolean;
   igConnected: boolean;

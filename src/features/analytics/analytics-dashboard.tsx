@@ -19,13 +19,13 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUp,
+  BarChart2,
   ChevronDown,
   Loader2,
   Unplug,
   X,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -35,6 +35,7 @@ import {
   DEMO_ENGAGEMENTS,
   DEMO_IMPRESSIONS,
   DEMO_TOTALS,
+  DEMO_VIDEO_VIEWS,
   type DayPoint,
 } from "./demo-data";
 import type { AnalyticsResponse, AnalyticsTotals } from "./types";
@@ -251,36 +252,36 @@ function MetricSection({
         </div>
 
         <div className="overflow-x-auto">
-        <table className="w-full min-w-[300px] text-[12.5px]">
-          <thead>
-            <tr className="border-b border-border/60">
-              <th className="py-2 text-left font-medium text-muted-foreground">
-                {title} Metrics
-              </th>
-              <th className="py-2 text-right font-medium text-muted-foreground">Totals</th>
-              <th className="py-2 text-right font-medium text-muted-foreground">% Change</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tableRows.map((row) => (
-              <tr
-                key={row.label}
-                className={cn(
-                  "border-b border-border/40 last:border-0",
-                  row.isSummary && "font-semibold",
-                )}
-              >
-                <td className="py-2 text-left text-foreground">{row.label}</td>
-                <td className="py-2 text-right text-foreground tabular-nums">
-                  {typeof row.value === "number" ? fmtFull(row.value) : row.value}
-                </td>
-                <td className="py-2 text-right">
-                  <TrendBadge change={row.change} />
-                </td>
+          <table className="w-full min-w-[300px] text-[12.5px]">
+            <thead>
+              <tr className="border-b border-border/60">
+                <th className="py-2 text-left font-medium text-muted-foreground">
+                  {title} Metrics
+                </th>
+                <th className="py-2 text-right font-medium text-muted-foreground">Totals</th>
+                <th className="py-2 text-right font-medium text-muted-foreground">% Change</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {tableRows.map((row) => (
+                <tr
+                  key={row.label}
+                  className={cn(
+                    "border-b border-border/40 last:border-0",
+                    row.isSummary && "font-semibold",
+                  )}
+                >
+                  <td className="py-2 text-left text-foreground">{row.label}</td>
+                  <td className="py-2 text-right text-foreground tabular-nums">
+                    {typeof row.value === "number" ? fmtFull(row.value) : row.value}
+                  </td>
+                  <td className="py-2 text-right">
+                    <TrendBadge change={row.change} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>
@@ -296,7 +297,6 @@ interface AnalyticsDashboardProps {
   clients: ClientOption[];
 }
 
-// Converts AnalyticsTotals (or DEMO_TOTALS) to a plain object safe for display
 function resolveTotals(t: AnalyticsTotals | typeof DEMO_TOTALS): AnalyticsTotals {
   return {
     impressions: {
@@ -331,6 +331,14 @@ function resolveTotals(t: AnalyticsTotals | typeof DEMO_TOTALS): AnalyticsTotals
       instagramChange: t.engagementRate.instagramChange,
       totalChange: t.engagementRate.totalChange,
     },
+    videoViews: {
+      facebook: t.videoViews.facebook,
+      instagram: t.videoViews.instagram,
+      total: t.videoViews.total,
+      facebookChange: t.videoViews.facebookChange,
+      instagramChange: t.videoViews.instagramChange,
+      totalChange: t.videoViews.totalChange,
+    },
     postLinkClicks: {
       total: t.postLinkClicks.total,
       totalChange: t.postLinkClicks.totalChange,
@@ -342,7 +350,7 @@ export function AnalyticsDashboard({ clients }: AnalyticsDashboardProps) {
   const now = new Date();
   const [year, setYear] = React.useState(now.getFullYear());
   const [month, setMonth] = React.useState(now.getMonth()); // 0-based
-  const [demoMode, setDemoMode] = React.useState(clients.length === 0);
+  const [demoMode, setDemoMode] = React.useState(false);
   const [demoBannerOpen, setDemoBannerOpen] = React.useState(true);
   const [selectedClientId, setSelectedClientId] = React.useState<string>(
     clients[0]?.id ?? "",
@@ -372,7 +380,6 @@ export function AnalyticsDashboard({ clients }: AnalyticsDashboardProps) {
   const prevMonthLabel =
     month === 0 ? `${MONTHS[11]} ${year - 1}` : `${MONTHS[month - 1]} ${year}`;
 
-  // Fetch real analytics whenever client/month/year changes (and not in demo mode)
   React.useEffect(() => {
     if (demoMode || !selectedClientId) {
       setRealData(null);
@@ -411,26 +418,28 @@ export function AnalyticsDashboard({ clients }: AnalyticsDashboardProps) {
     };
   }, [demoMode, selectedClientId, year, month]);
 
-  // Decide which data to display
-  const showDemo = demoMode || (!realData && !loading);
-  const impressions = showDemo ? DEMO_IMPRESSIONS : (realData?.impressions ?? DEMO_IMPRESSIONS);
-  const engagements = showDemo ? DEMO_ENGAGEMENTS : (realData?.engagements ?? DEMO_ENGAGEMENTS);
-  const audienceGrowth = showDemo
-    ? DEMO_AUDIENCE_GROWTH
-    : (realData?.audienceGrowth ?? DEMO_AUDIENCE_GROWTH);
-  const engagementRate = showDemo
-    ? DEMO_ENGAGEMENT_RATE
-    : (realData?.engagementRate ?? DEMO_ENGAGEMENT_RATE);
-  const t = resolveTotals(showDemo ? DEMO_TOTALS : (realData?.totals ?? DEMO_TOTALS));
-
   const selectedClient = clients.find((c) => c.id === selectedClientId);
+
+  // Only show chart data when demo is on or real data has loaded
+  const showData = demoMode || realData !== null;
+
+  const t = showData
+    ? resolveTotals(demoMode ? DEMO_TOTALS : realData!.totals)
+    : null;
+
+  const impressions = demoMode ? DEMO_IMPRESSIONS : (realData?.impressions ?? []);
+  const engagements = demoMode ? DEMO_ENGAGEMENTS : (realData?.engagements ?? []);
+  const audienceGrowth = demoMode ? DEMO_AUDIENCE_GROWTH : (realData?.audienceGrowth ?? []);
+  const engagementRate = demoMode ? DEMO_ENGAGEMENT_RATE : (realData?.engagementRate ?? []);
+  const videoViews = demoMode ? DEMO_VIDEO_VIEWS : (realData?.videoViews ?? []);
 
   return (
     <div className="flex flex-col gap-0">
       {/* ── Toolbar ── */}
       <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur-sm px-3 py-3 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+          {/* LEFT: month nav + client selector */}
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -453,10 +462,8 @@ export function AnalyticsDashboard({ clients }: AnalyticsDashboardProps) {
             <span className="ml-1 text-[11.5px] text-muted-foreground hidden sm:inline">
               vs {prevMonthLabel}
             </span>
-          </div>
 
-          <div className="flex items-center gap-3">
-            {/* Client selector — only shown when demo mode is off */}
+            {/* Client selector — lives here so toggle position stays stable */}
             {!demoMode && clients.length > 0 && (
               <div className="relative">
                 <select
@@ -473,27 +480,28 @@ export function AnalyticsDashboard({ clients }: AnalyticsDashboardProps) {
                 <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               </div>
             )}
+          </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-[12px] text-muted-foreground">Demo mode</span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={demoMode}
-                onClick={() => setDemoMode((v) => !v)}
+          {/* RIGHT: demo mode toggle — always in same spot */}
+          <div className="flex items-center gap-2">
+            <span className="text-[12px] text-muted-foreground">Demo mode</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={demoMode}
+              onClick={() => setDemoMode((v) => !v)}
+              className={cn(
+                "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200",
+                demoMode ? "bg-[hsl(var(--brand))]" : "bg-input",
+              )}
+            >
+              <span
                 className={cn(
-                  "relative h-5 w-9 rounded-full transition-colors",
-                  demoMode ? "bg-[hsl(var(--brand))]" : "bg-muted-foreground/30",
+                  "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform duration-200",
+                  demoMode ? "translate-x-5" : "translate-x-0",
                 )}
-              >
-                <span
-                  className={cn(
-                    "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform",
-                    demoMode ? "translate-x-4" : "translate-x-0.5",
-                  )}
-                />
-              </button>
-            </div>
+              />
+            </button>
           </div>
         </div>
       </div>
@@ -568,152 +576,202 @@ export function AnalyticsDashboard({ clients }: AnalyticsDashboardProps) {
           </div>
         )}
 
-        {/* ── Performance Summary ── */}
-        <Card className={cn(loading && "opacity-60 pointer-events-none")}>
-          <CardHeader className="pb-1">
-            <CardTitle className="text-[15px] font-semibold">Performance Summary</CardTitle>
-            <p className="text-[12px] text-muted-foreground">
-              View your key profile performance metrics accrued during the selected time period.
-            </p>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="grid grid-cols-2 divide-x divide-border/60 border-t border-border/60 lg:grid-cols-4">
-              <KpiCard
-                label="Impressions"
-                value={fmt(t.impressions.total)}
-                change={t.impressions.totalChange}
-              />
-              <KpiCard
-                label="Engagements"
-                value={fmt(t.engagements.total)}
-                change={t.engagements.totalChange}
-              />
-              <KpiCard
-                label="Net Audience Growth"
-                value={fmtFull(t.audienceGrowth.total)}
-                change={t.audienceGrowth.totalChange}
-              />
-              <KpiCard
-                label="Engagement Rate (per Impression)"
-                value={`${t.engagementRate.total}%`}
-                change={t.engagementRate.totalChange}
+        {/* Empty state — demo off, no data, not loading */}
+        {!demoMode && !loading && !fetchError && !realData && (
+          <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-muted/20 py-16 text-center">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+              <BarChart2 className="h-6 w-6" />
+            </span>
+            <div className="space-y-1">
+              <p className="text-[14px] font-semibold text-foreground">No analytics yet</p>
+              <p className="max-w-xs text-[12px] text-muted-foreground">
+                {clients.length === 0
+                  ? "Add a client and connect their Facebook or Instagram account to see analytics here."
+                  : "Select a client with a connected Facebook or Instagram account, or turn on Demo Mode to preview sample data."}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ── Data sections — only rendered when demo is on or real data loaded ── */}
+        {showData && t !== null && (
+          <>
+            {/* Performance Summary */}
+            <Card className={cn(loading && "opacity-60 pointer-events-none")}>
+              <CardHeader className="pb-1">
+                <CardTitle className="text-[15px] font-semibold">Performance Summary</CardTitle>
+                <p className="text-[12px] text-muted-foreground">
+                  View your key profile performance metrics accrued during the selected time period.
+                </p>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="grid grid-cols-2 divide-x divide-border/60 border-t border-border/60 lg:grid-cols-4">
+                  <KpiCard
+                    label="Impressions"
+                    value={fmt(t.impressions.total)}
+                    change={t.impressions.totalChange}
+                  />
+                  <KpiCard
+                    label="Engagements"
+                    value={fmt(t.engagements.total)}
+                    change={t.engagements.totalChange}
+                  />
+                  <KpiCard
+                    label="Net Audience Growth"
+                    value={fmtFull(t.audienceGrowth.total)}
+                    change={t.audienceGrowth.totalChange}
+                  />
+                  <KpiCard
+                    label="Engagement Rate (per Impression)"
+                    value={`${t.engagementRate.total}%`}
+                    change={t.engagementRate.totalChange}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Audience Growth */}
+            <div className={cn(loading && "opacity-60 pointer-events-none")}>
+              <MetricSection
+                title="Audience Growth"
+                description="See how your audience grew during the selected time period."
+                data={audienceGrowth}
+                chartType="line"
+                tableRows={[
+                  {
+                    label: "Net Audience Growth",
+                    value: t.audienceGrowth.total,
+                    change: t.audienceGrowth.totalChange,
+                    isSummary: true,
+                  },
+                  {
+                    label: "Facebook Net Follower Growth",
+                    value: t.audienceGrowth.facebook,
+                    change: t.audienceGrowth.facebookChange,
+                  },
+                  {
+                    label: "Instagram Net Follower Growth",
+                    value: t.audienceGrowth.instagram,
+                    change: t.audienceGrowth.instagramChange,
+                  },
+                ]}
               />
             </div>
-          </CardContent>
-        </Card>
 
-        {/* ── Audience Growth ── */}
-        <div className={cn(loading && "opacity-60 pointer-events-none")}>
-          <MetricSection
-            title="Audience Growth"
-            description="See how your audience grew during the selected time period."
-            data={audienceGrowth}
-            chartType="line"
-            tableRows={[
-              {
-                label: "Net Audience Growth",
-                value: t.audienceGrowth.total,
-                change: t.audienceGrowth.totalChange,
-                isSummary: true,
-              },
-              {
-                label: "Facebook Net Follower Growth",
-                value: t.audienceGrowth.facebook,
-                change: t.audienceGrowth.facebookChange,
-              },
-              {
-                label: "Instagram Net Follower Growth",
-                value: t.audienceGrowth.instagram,
-                change: t.audienceGrowth.instagramChange,
-              },
-            ]}
-          />
-        </div>
+            {/* Impressions */}
+            <div className={cn(loading && "opacity-60 pointer-events-none")}>
+              <MetricSection
+                title="Impressions"
+                description="Review how your content was seen across networks during the selected time period."
+                data={impressions}
+                chartType="area"
+                tableRows={[
+                  {
+                    label: "Impressions",
+                    value: t.impressions.total,
+                    change: t.impressions.totalChange,
+                    isSummary: true,
+                  },
+                  {
+                    label: "Facebook Views",
+                    value: t.impressions.facebook,
+                    change: t.impressions.facebookChange,
+                  },
+                  {
+                    label: "Instagram Views",
+                    value: t.impressions.instagram,
+                    change: t.impressions.instagramChange,
+                  },
+                ]}
+              />
+            </div>
 
-        {/* ── Impressions ── */}
-        <div className={cn(loading && "opacity-60 pointer-events-none")}>
-          <MetricSection
-            title="Impressions"
-            description="Review how your content was seen across networks during the selected time period."
-            data={impressions}
-            chartType="area"
-            tableRows={[
-              {
-                label: "Impressions",
-                value: t.impressions.total,
-                change: t.impressions.totalChange,
-                isSummary: true,
-              },
-              {
-                label: "Facebook Views",
-                value: t.impressions.facebook,
-                change: t.impressions.facebookChange,
-              },
-              {
-                label: "Instagram Views",
-                value: t.impressions.instagram,
-                change: t.impressions.instagramChange,
-              },
-            ]}
-          />
-        </div>
+            {/* Engagements */}
+            <div className={cn(loading && "opacity-60 pointer-events-none")}>
+              <MetricSection
+                title="Engagements"
+                description="See how people are engaging with your posts during the selected time period."
+                data={engagements}
+                chartType="area"
+                tableRows={[
+                  {
+                    label: "Engagements",
+                    value: t.engagements.total,
+                    change: t.engagements.totalChange,
+                    isSummary: true,
+                  },
+                  {
+                    label: "Facebook Engagements",
+                    value: t.engagements.facebook,
+                    change: t.engagements.facebookChange,
+                  },
+                  {
+                    label: "Instagram Engagements",
+                    value: t.engagements.instagram,
+                    change: t.engagements.instagramChange,
+                  },
+                ]}
+              />
+            </div>
 
-        {/* ── Engagements ── */}
-        <div className={cn(loading && "opacity-60 pointer-events-none")}>
-          <MetricSection
-            title="Engagements"
-            description="See how people are engaging with your posts during the selected time period."
-            data={engagements}
-            chartType="area"
-            tableRows={[
-              {
-                label: "Engagements",
-                value: t.engagements.total,
-                change: t.engagements.totalChange,
-                isSummary: true,
-              },
-              {
-                label: "Facebook Engagements",
-                value: t.engagements.facebook,
-                change: t.engagements.facebookChange,
-              },
-              {
-                label: "Instagram Engagements",
-                value: t.engagements.instagram,
-                change: t.engagements.instagramChange,
-              },
-            ]}
-          />
-        </div>
+            {/* Engagement Rate */}
+            <div className={cn(loading && "opacity-60 pointer-events-none")}>
+              <MetricSection
+                title="Engagement Rate"
+                description="See how engaged people are with your posts during the selected time period."
+                data={engagementRate}
+                chartType="line"
+                isRate
+                tableRows={[
+                  {
+                    label: "Engagement Rate (per Impression)",
+                    value: `${t.engagementRate.total}%`,
+                    change: t.engagementRate.totalChange,
+                    isSummary: true,
+                  },
+                  {
+                    label: "Facebook Engagement Rate",
+                    value: `${t.engagementRate.facebook}%`,
+                    change: t.engagementRate.facebookChange,
+                  },
+                  {
+                    label: "Instagram Engagement Rate",
+                    value: `${t.engagementRate.instagram}%`,
+                    change: t.engagementRate.instagramChange,
+                  },
+                ]}
+              />
+            </div>
 
-        {/* ── Engagement Rate ── */}
-        <div className={cn(loading && "opacity-60 pointer-events-none")}>
-          <MetricSection
-            title="Engagement Rate"
-            description="See how engaged people are with your posts during the selected time period."
-            data={engagementRate}
-            chartType="line"
-            isRate
-            tableRows={[
-              {
-                label: "Engagement Rate (per Impression)",
-                value: `${t.engagementRate.total}%`,
-                change: t.engagementRate.totalChange,
-                isSummary: true,
-              },
-              {
-                label: "Facebook Engagement Rate",
-                value: `${t.engagementRate.facebook}%`,
-                change: t.engagementRate.facebookChange,
-              },
-              {
-                label: "Instagram Engagement Rate",
-                value: `${t.engagementRate.instagram}%`,
-                change: t.engagementRate.instagramChange,
-              },
-            ]}
-          />
-        </div>
+            {/* Video Views */}
+            <div className={cn(loading && "opacity-60 pointer-events-none")}>
+              <MetricSection
+                title="Video Views"
+                description="Track how many times your videos were viewed during the selected time period."
+                data={videoViews}
+                chartType="area"
+                tableRows={[
+                  {
+                    label: "Video Views",
+                    value: t.videoViews.total,
+                    change: t.videoViews.totalChange,
+                    isSummary: true,
+                  },
+                  {
+                    label: "Facebook Video Views",
+                    value: t.videoViews.facebook,
+                    change: t.videoViews.facebookChange,
+                  },
+                  {
+                    label: "Instagram Video Views",
+                    value: t.videoViews.instagram,
+                    change: t.videoViews.instagramChange,
+                  },
+                ]}
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

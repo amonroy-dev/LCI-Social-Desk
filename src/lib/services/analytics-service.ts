@@ -200,8 +200,8 @@ export async function fetchMetaAnalytics(
   const prevStart = Math.floor(Date.UTC(prevYear, prevMonth - 1, 1) / 1000);
   const prevEnd = currStart;
 
-  // FB: impressions, engaged users, net new fans (audience growth)
-  const FB_METRICS = ["page_impressions", "page_engaged_users", "page_fan_adds_unique"];
+  // FB: impressions, engaged users, net new fans, video views
+  const FB_METRICS = ["page_impressions", "page_engaged_users", "page_fan_adds_unique", "page_video_views"];
   // IG: impressions, reach (engagement proxy), daily follower count change
   const IG_METRICS = ["impressions", "reach", "follower_count"];
 
@@ -254,6 +254,18 @@ export async function fetchMetaAnalytics(
     prevIg.get("follower_count") ?? EMPTY_MAP,
   );
 
+  // Video views: FB only (IG account-level video views not available in basic insights API)
+  const currVideoViews = buildDayPoints(
+    year, month,
+    currFb.get("page_video_views") ?? EMPTY_MAP,
+    EMPTY_MAP,
+  );
+  const prevVideoViews = buildDayPoints(
+    prevYear, prevMonth,
+    prevFb.get("page_video_views") ?? EMPTY_MAP,
+    EMPTY_MAP,
+  );
+
   // Engagement rate: engagements / impressions * 100
   const currEngRate: DayPoint[] = currImpressions.map((imp, i) => ({
     day: i + 1,
@@ -283,6 +295,7 @@ export async function fetchMetaAnalytics(
   const impressionTotals = computeTotals(currImpressions, prevImpressions);
   const engagementTotals = computeTotals(currEngagements, prevEngagements);
   const audienceGrowthTotals = computeTotals(currAudienceGrowth, prevAudienceGrowth);
+  const videoViewTotals = computeTotals(currVideoViews, prevVideoViews);
 
   const currEngRateFb =
     impressionTotals.facebook > 0
@@ -313,6 +326,7 @@ export async function fetchMetaAnalytics(
     engagements: currEngagements,
     audienceGrowth: currAudienceGrowth,
     engagementRate: currEngRate,
+    videoViews: currVideoViews,
     totals: {
       impressions: impressionTotals,
       engagements: engagementTotals,
@@ -325,6 +339,7 @@ export async function fetchMetaAnalytics(
         instagramChange: roundChange(pctChange(currEngRateIg, prevEngRateIg)),
         totalChange: roundChange(pctChange(currEngRateTotal, prevEngRateTotal)),
       },
+      videoViews: videoViewTotals,
       postLinkClicks: { total: 0, totalChange: 0 },
     },
     fbConnected,
