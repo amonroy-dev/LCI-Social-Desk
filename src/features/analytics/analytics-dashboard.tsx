@@ -21,6 +21,7 @@ import {
   ArrowUp,
   BarChart2,
   ChevronDown,
+  FileDown,
   Loader2,
   Unplug,
   X,
@@ -482,8 +483,23 @@ export function AnalyticsDashboard({ clients }: AnalyticsDashboardProps) {
             )}
           </div>
 
-          {/* RIGHT: demo mode toggle — always in same spot */}
-          <div className="flex items-center gap-2">
+          {/* RIGHT: report button + demo toggle */}
+          <div className="flex items-center gap-3">
+            {showData && (
+              <a
+                href={
+                  demoMode
+                    ? `/dashboard/analytics/report?demo=true&year=${year}&month=${month + 1}&clientName=Demo`
+                    : `/dashboard/analytics/report?clientId=${encodeURIComponent(selectedClientId)}&year=${year}&month=${month + 1}&clientName=${encodeURIComponent(selectedClient?.name ?? "Client")}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-background px-3 text-[12.5px] font-medium text-foreground hover:bg-muted/50"
+              >
+                <FileDown className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Download Report</span>
+              </a>
+            )}
             <span className="text-[12px] text-muted-foreground">Demo mode</span>
             <button
               type="button"
