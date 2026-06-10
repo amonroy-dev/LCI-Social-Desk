@@ -94,8 +94,8 @@ export function Sidebar({ session }: SidebarProps) {
                   <Link
                     href={item.href}
                     className={cn(
-                      "group relative flex h-9 w-9 items-center justify-center rounded-md text-[hsl(var(--sidebar-muted))] transition-colors",
-                      "hover:bg-white/5 hover:text-white",
+                      "group relative flex h-9 w-9 items-center justify-center rounded-md text-[hsl(var(--sidebar-muted))] transition-all duration-100",
+                      "hover:bg-white/5 hover:text-white active:scale-90 active:opacity-60",
                       isActive &&
                         "bg-white/8 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]",
                     )}
