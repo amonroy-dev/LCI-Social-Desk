@@ -66,9 +66,9 @@ export function initialComposerState(
     draft,
     events: [],
     panels: {
-      firstComment: existingDraft ? !!existingDraft.firstComment : true,
+      firstComment: true,
       workflows: false,
-      tags: existingDraft ? existingDraft.tags.length > 0 : true,
+      tags: true,
       schedule: existingDraft
         ? !!existingDraft.schedule.date
         : !!initialSchedule?.date,
