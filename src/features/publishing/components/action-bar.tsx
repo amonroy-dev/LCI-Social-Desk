@@ -222,6 +222,7 @@ export function ActionBar({
         open={reviewOpen}
         onOpenChange={setReviewOpen}
         draft={draft}
+        client={client}
         emailConfigured={emailConfigured}
         onSubmitted={({ draft: updatedDraft, sentTo }) => {
           dispatch({ type: "merge-draft", draft: updatedDraft });

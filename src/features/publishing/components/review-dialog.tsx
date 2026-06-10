@@ -23,12 +23,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { SocialPostDraft } from "@/lib/types";
+import type { Client, SocialPostDraft } from "@/lib/types";
 
 interface ReviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   draft: SocialPostDraft;
+  client?: Client;
   emailConfigured: boolean;
   onSubmitted: (result: {
     url: string;
@@ -54,11 +55,12 @@ export function ReviewDialog({
   open,
   onOpenChange,
   draft,
+  client,
   emailConfigured,
   onSubmitted,
 }: ReviewDialogProps) {
-  const [contactName, setContactName] = React.useState("");
-  const [contactEmail, setContactEmail] = React.useState("");
+  const [contactName, setContactName] = React.useState(client?.primaryContactName ?? "");
+  const [contactEmail, setContactEmail] = React.useState(client?.primaryContactEmail ?? "");
   const [state, setState] = React.useState<SubmitState>({ phase: "idle" });
   const [copied, setCopied] = React.useState(false);
 
@@ -66,8 +68,10 @@ export function ReviewDialog({
     if (open) {
       setState({ phase: "idle" });
       setCopied(false);
+      setContactName(client?.primaryContactName ?? "");
+      setContactEmail(client?.primaryContactEmail ?? "");
     }
-  }, [open]);
+  }, [open, client]);
 
   const submit = async (action: "email" | "link") => {
     if (action === "email" && !contactEmail.trim()) {
