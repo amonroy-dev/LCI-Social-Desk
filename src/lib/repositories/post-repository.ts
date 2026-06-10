@@ -146,6 +146,23 @@ export const postRepository = {
     }
   },
 
+  async delete(id: string): Promise<boolean> {
+    const db = getAdminFirestore();
+    if (!db) {
+      const had = memory.has(id);
+      memory.delete(id);
+      return had;
+    }
+    try {
+      await db.collection(COLLECTIONS.socialPosts).doc(id).delete();
+      return true;
+    } catch (err) {
+      const e = classifyFirestoreError(err);
+      if (e.kind === "not-found") return false;
+      throw new Error(`Could not delete post (${e.kind}): ${e.message}`);
+    }
+  },
+
   /** Returns all scheduled posts whose scheduledAt has passed (i.e. ready to publish). */
   async listDueScheduled(): Promise<SocialPostDraft[]> {
     const now = new Date().toISOString();

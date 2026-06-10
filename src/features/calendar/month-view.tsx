@@ -25,9 +25,10 @@ interface MonthViewProps {
   currentDate: Date;
   postsByDate: Map<string, SocialPostDraft[]>;
   clients: Client[];
+  onDelete?: (id: string) => void;
 }
 
-export function MonthView({ currentDate, postsByDate, clients }: MonthViewProps) {
+export function MonthView({ currentDate, postsByDate, clients, onDelete }: MonthViewProps) {
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const calStart = startOfWeek(monthStart, { weekStartsOn: 0 });
@@ -81,6 +82,7 @@ export function MonthView({ currentDate, postsByDate, clients }: MonthViewProps)
                   today={today}
                   clientMap={clientMap}
                   showClient={showClient}
+                  onDelete={onDelete}
                 />
               );
             })}
@@ -100,6 +102,7 @@ interface DayCellProps {
   today: boolean;
   clientMap: Map<string, Client>;
   showClient: boolean;
+  onDelete?: (id: string) => void;
 }
 
 function DayCell({
@@ -111,6 +114,7 @@ function DayCell({
   today,
   clientMap,
   showClient,
+  onDelete,
 }: DayCellProps) {
   const [hovered, setHovered] = React.useState(false);
   const hasPosts = posts.length > 0 || overflow > 0;
@@ -152,6 +156,7 @@ function DayCell({
               key={post.id}
               post={post}
               client={showClient ? clientMap.get(post.clientId) : undefined}
+              onDelete={onDelete}
             />
           ))}
           {overflow > 0 ? (

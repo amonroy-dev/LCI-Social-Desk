@@ -59,15 +59,19 @@ function makeInitialDraft(
 export function initialComposerState(
   clientId: string,
   initialSchedule?: ScheduleState,
+  existingDraft?: SocialPostDraft,
 ): ComposerState {
+  const draft = existingDraft ?? makeInitialDraft(clientId, initialSchedule);
   return {
-    draft: makeInitialDraft(clientId, initialSchedule),
+    draft,
     events: [],
     panels: {
-      firstComment: true,
+      firstComment: existingDraft ? !!existingDraft.firstComment : true,
       workflows: false,
-      tags: true,
-      schedule: initialSchedule?.date ? true : false,
+      tags: existingDraft ? existingDraft.tags.length > 0 : true,
+      schedule: existingDraft
+        ? !!existingDraft.schedule.date
+        : !!initialSchedule?.date,
     },
   };
 }
@@ -152,11 +156,21 @@ function reducer(state: ComposerState, action: ComposerAction): ComposerState {
   }
 }
 
+type ComposerInitArgs = {
+  clientId: string;
+  initialSchedule?: ScheduleState;
+  existingDraft?: SocialPostDraft;
+};
+
 export function useComposer(
   initialClientId: string,
   initialSchedule?: ScheduleState,
+  existingDraft?: SocialPostDraft,
 ) {
-  return useReducer(reducer, initialClientId, (id) =>
-    initialComposerState(id, initialSchedule),
+  return useReducer(
+    reducer,
+    { clientId: initialClientId, initialSchedule, existingDraft } satisfies ComposerInitArgs,
+    ({ clientId, initialSchedule: sched, existingDraft: draft }) =>
+      initialComposerState(clientId, sched, draft),
   );
 }

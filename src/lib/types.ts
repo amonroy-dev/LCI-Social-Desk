@@ -19,6 +19,7 @@ export type AuditEventType =
   | "post.simulated"
   | "post.failed"
   | "post.cron_published"
+  | "post.deleted"
   | "auth.signed_in"
   | "auth.signed_out"
   | "invite.created"

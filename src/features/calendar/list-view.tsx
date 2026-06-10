@@ -12,9 +12,10 @@ import { PostCard } from "./post-card";
 interface ListViewProps {
   posts: SocialPostDraft[];
   clients: Client[];
+  onDelete?: (id: string) => void;
 }
 
-export function ListView({ posts, clients }: ListViewProps) {
+export function ListView({ posts, clients, onDelete }: ListViewProps) {
   const clientMap = new Map(clients.map((c) => [c.id, c]));
 
   const unscheduled = posts.filter((p) => !p.schedule.date);
@@ -71,6 +72,7 @@ export function ListView({ posts, clients }: ListViewProps) {
                 key={post.id}
                 post={post}
                 client={clientMap.get(post.clientId)}
+                onDelete={onDelete}
               />
             ))}
           </div>
@@ -103,6 +105,7 @@ export function ListView({ posts, clients }: ListViewProps) {
                   key={post.id}
                   post={post}
                   client={clientMap.get(post.clientId)}
+                  onDelete={onDelete}
                 />
               ))}
             </div>

@@ -46,11 +46,16 @@ export function CalendarClient({ initialPosts, clients }: CalendarClientProps) {
   const [selectedClientId, setSelectedClientId] = React.useState<string | null>(
     null,
   );
+  const [posts, setPosts] = React.useState(initialPosts);
+
+  const handleDelete = React.useCallback((id: string) => {
+    setPosts((prev) => prev.filter((p) => p.id !== id));
+  }, []);
 
   const filteredPosts = React.useMemo(() => {
-    if (!selectedClientId) return initialPosts;
-    return initialPosts.filter((p) => p.clientId === selectedClientId);
-  }, [initialPosts, selectedClientId]);
+    if (!selectedClientId) return posts;
+    return posts.filter((p) => p.clientId === selectedClientId);
+  }, [posts, selectedClientId]);
 
   const postsByDate = React.useMemo(() => {
     const map = new Map<string, SocialPostDraft[]>();
@@ -197,6 +202,7 @@ export function CalendarClient({ initialPosts, clients }: CalendarClientProps) {
             currentDate={currentDate}
             postsByDate={postsByDate}
             clients={clients}
+            onDelete={handleDelete}
           />
         ) : null}
         {view === "week" ? (
@@ -204,10 +210,11 @@ export function CalendarClient({ initialPosts, clients }: CalendarClientProps) {
             currentDate={currentDate}
             postsByDate={postsByDate}
             clients={clients}
+            onDelete={handleDelete}
           />
         ) : null}
         {view === "list" ? (
-          <ListView posts={filteredPosts} clients={clients} />
+          <ListView posts={filteredPosts} clients={clients} onDelete={handleDelete} />
         ) : null}
       </div>
     </div>

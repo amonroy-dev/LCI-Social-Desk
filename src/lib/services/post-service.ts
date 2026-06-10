@@ -172,6 +172,20 @@ export async function getPost(id: string): Promise<SocialPostDraft | null> {
   return postRepository.get(id);
 }
 
+export async function deletePost(
+  id: string,
+): Promise<{ event: AuditLogEvent }> {
+  const post = await postRepository.get(id);
+  await postRepository.delete(id);
+  const event = await recordAudit({
+    type: "post.deleted",
+    message: `Post ${id} deleted.`,
+    clientId: post?.clientId,
+    meta: { postId: id },
+  });
+  return { event };
+}
+
 export async function listPosts(filters: {
   clientId?: string;
   statuses?: SocialPostDraft["status"][];

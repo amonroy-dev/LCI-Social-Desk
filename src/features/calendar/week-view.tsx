@@ -19,9 +19,10 @@ interface WeekViewProps {
   currentDate: Date;
   postsByDate: Map<string, SocialPostDraft[]>;
   clients: Client[];
+  onDelete?: (id: string) => void;
 }
 
-export function WeekView({ currentDate, postsByDate, clients }: WeekViewProps) {
+export function WeekView({ currentDate, postsByDate, clients, onDelete }: WeekViewProps) {
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 0 });
   const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
@@ -71,6 +72,7 @@ export function WeekView({ currentDate, postsByDate, clients }: WeekViewProps) {
                   key={post.id}
                   post={post}
                   client={clientMap.get(post.clientId)}
+                  onDelete={onDelete}
                 />
               ))}
               {dayPosts.length === 0 ? (
