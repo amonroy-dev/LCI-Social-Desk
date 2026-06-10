@@ -1,11 +1,8 @@
 // Deterministic demo data for the analytics dashboard.
 // Shown when demoMode is on or no connections exist.
 
-export interface DayPoint {
-  day: number;
-  facebook: number;
-  instagram: number;
-}
+import type { DayPoint } from "./types";
+export type { DayPoint } from "./types";
 
 function seed(n: number) {
   // Simple deterministic pseudo-random based on day index

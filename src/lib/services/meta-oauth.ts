@@ -25,6 +25,7 @@ export const DEFAULT_META_SCOPES = [
   "pages_manage_posts",
   "instagram_basic",
   "instagram_content_publish",
+  "instagram_manage_insights",
   "business_management",
 ];
 
