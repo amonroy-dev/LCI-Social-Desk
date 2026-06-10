@@ -110,7 +110,7 @@ export function ClientsRoster({ rows: initialRows }: ClientsRosterProps) {
           variant="brand"
           size="sm"
           onClick={() => setOpen(true)}
-          className="self-start sm:self-auto"
+          className="w-full sm:w-auto"
         >
           <Plus className="h-3.5 w-3.5" />
           Add client
@@ -189,10 +189,13 @@ export function ClientsRoster({ rows: initialRows }: ClientsRosterProps) {
                   </div>
 
                   <div className="flex items-center justify-between gap-2">
-                    <Button asChild variant="outline" size="sm" className="flex-1">
+                    <Button asChild variant="outline" size="sm" className="flex-1 min-w-0">
                       <Link href={`/dashboard/clients/${client.id}/connections`}>
-                        <Link2 className="h-3.5 w-3.5" />
-                        Manage connections
+                        <Link2 className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">
+                          <span className="sm:hidden">Manage</span>
+                          <span className="hidden sm:inline">Manage connections</span>
+                        </span>
                       </Link>
                     </Button>
                     <Button

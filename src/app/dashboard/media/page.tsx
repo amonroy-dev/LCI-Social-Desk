@@ -1,4 +1,4 @@
-import { TopBar } from "@/components/shell/top-bar";
+﻿import { TopBar } from "@/components/shell/top-bar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function MediaLibraryPage() {
@@ -8,7 +8,7 @@ export default function MediaLibraryPage() {
         title="Media Library"
         subtitle="Shared media assets across all client accounts."
       />
-      <main className="flex-1 overflow-auto px-6 py-5">
+      <main className="flex-1 overflow-auto px-3 py-4 sm:px-6 sm:py-5">
         <Card>
           <CardHeader>
             <CardTitle>Asset workspace</CardTitle>

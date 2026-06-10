@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
+﻿import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ClientsLoading() {
   return (
@@ -14,7 +14,7 @@ export default function ClientsLoading() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-auto px-6 py-5">
+      <main className="flex-1 overflow-auto px-3 py-4 sm:px-6 sm:py-5">
         {/* Toolbar row */}
         <div className="mb-4 flex items-center justify-between">
           <Skeleton className="h-8 w-64 rounded-md" />

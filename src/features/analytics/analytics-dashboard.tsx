@@ -79,10 +79,10 @@ interface KpiCardProps {
 }
 function KpiCard({ label, value, change }: KpiCardProps) {
   return (
-    <div className="flex flex-col gap-1 border-r border-border/60 px-6 py-4 last:border-r-0">
+    <div className="flex flex-col gap-1 border-r border-border/60 px-3 py-3 last:border-r-0 sm:px-6 sm:py-4">
       <span className="text-[11.5px] text-muted-foreground">{label}</span>
       <div className="flex items-baseline gap-2">
-        <span className="text-[22px] font-bold tracking-tight text-foreground">{value}</span>
+        <span className="text-[17px] font-bold tracking-tight text-foreground sm:text-[22px]">{value}</span>
         <TrendBadge change={change} />
       </div>
     </div>
@@ -152,7 +152,7 @@ function MetricSection({
         <p className="text-[12px] text-muted-foreground">{description}</p>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="h-[200px] w-full">
+        <div className="h-[160px] w-full sm:h-[200px]">
           <ResponsiveContainer width="100%" height="100%">
             {chartType === "area" ? (
               <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -250,7 +250,8 @@ function MetricSection({
           </div>
         </div>
 
-        <table className="w-full text-[12.5px]">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[300px] text-[12.5px]">
           <thead>
             <tr className="border-b border-border/60">
               <th className="py-2 text-left font-medium text-muted-foreground">
@@ -280,6 +281,7 @@ function MetricSection({
             ))}
           </tbody>
         </table>
+        </div>
       </CardContent>
     </Card>
   );
@@ -426,7 +428,7 @@ export function AnalyticsDashboard({ clients }: AnalyticsDashboardProps) {
   return (
     <div className="flex flex-col gap-0">
       {/* ── Toolbar ── */}
-      <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur-sm px-6 py-3">
+      <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur-sm px-3 py-3 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Button
@@ -496,7 +498,7 @@ export function AnalyticsDashboard({ clients }: AnalyticsDashboardProps) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto px-6 py-5 space-y-5">
+      <div className="flex-1 overflow-auto px-3 py-4 space-y-4 sm:px-6 sm:py-5 sm:space-y-5">
         {/* Demo mode banner */}
         {demoMode && demoBannerOpen && (
           <div className="flex items-start justify-between gap-3 rounded-lg border border-[hsl(var(--brand))]/20 bg-[hsl(var(--brand-soft))] px-4 py-3">

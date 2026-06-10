@@ -1,4 +1,4 @@
-import { TopBar } from "@/components/shell/top-bar";
+﻿import { TopBar } from "@/components/shell/top-bar";
 import { ClientsRoster, type ClientRosterRow } from "@/features/clients/clients-roster";
 import { loadClients } from "@/lib/services/client-service";
 import { listConnectionsForClient } from "@/lib/services/connection-service";
@@ -23,7 +23,7 @@ export default async function ClientsPage() {
         title="Clients"
         subtitle="Managed client accounts and their connection status."
       />
-      <main className="flex-1 overflow-auto px-6 py-5">
+      <main className="flex-1 overflow-auto px-3 py-4 sm:px-6 sm:py-5">
         <ClientsRoster rows={rows} />
       </main>
     </>

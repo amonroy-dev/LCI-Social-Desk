@@ -43,10 +43,15 @@ interface CalendarClientProps {
 export function CalendarClient({ initialPosts, clients }: CalendarClientProps) {
   const [view, setView] = React.useState<CalendarView>("month");
   const [currentDate, setCurrentDate] = React.useState(() => new Date());
-  const [selectedClientId, setSelectedClientId] = React.useState<string | null>(
-    null,
-  );
+  const [selectedClientId, setSelectedClientId] = React.useState<string | null>(null);
   const [posts, setPosts] = React.useState(initialPosts);
+
+  // Default to list view on small screens
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setView("list");
+    }
+  }, []);
 
   const handleDelete = React.useCallback((id: string) => {
     setPosts((prev) => prev.filter((p) => p.id !== id));
@@ -84,7 +89,7 @@ export function CalendarClient({ initialPosts, clients }: CalendarClientProps) {
     if (view === "week") {
       const start = startOfWeek(currentDate, { weekStartsOn: 0 });
       const end = endOfWeek(currentDate, { weekStartsOn: 0 });
-      return `${format(start, "MMM d")} – ${format(end, "MMM d, yyyy")}`;
+      return `${format(start, "MMM d")} – ${format(end, "MMM d")}`;
     }
     return "All Posts";
   }, [view, currentDate]);
@@ -94,105 +99,75 @@ export function CalendarClient({ initialPosts, clients }: CalendarClientProps) {
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      {/* Page header */}
-      <header className="flex h-14 shrink-0 flex-wrap items-center gap-3 border-b border-border bg-card/80 px-5 backdrop-blur">
-        <h1 className="text-[15px] font-semibold tracking-tight text-foreground">
-          Calendar
-        </h1>
+      {/* ── Header ── */}
+      <header className="shrink-0 border-b border-border bg-card/80 px-3 py-2 backdrop-blur sm:px-5">
+        {/* Row 1: title + view tabs + (date nav on sm+) + right actions */}
+        <div className="flex flex-wrap items-center gap-2 sm:h-10 sm:flex-nowrap sm:gap-3">
+          <h1 className="shrink-0 text-[15px] font-semibold tracking-tight text-foreground">
+            Calendar
+          </h1>
 
-        {/* View switcher */}
-        <div className="flex items-center rounded-md border border-border bg-muted/30 p-0.5">
-          <ViewTab
-            active={view === "month"}
-            onClick={() => setView("month")}
-            icon={<LayoutGrid className="h-3.5 w-3.5" />}
-            label="Month"
-          />
-          <ViewTab
-            active={view === "week"}
-            onClick={() => setView("week")}
-            icon={<CalendarDays className="h-3.5 w-3.5" />}
-            label="Week"
-          />
-          <ViewTab
-            active={view === "list"}
-            onClick={() => setView("list")}
-            icon={<List className="h-3.5 w-3.5" />}
-            label="List"
-          />
+          {/* View switcher */}
+          <div className="flex items-center rounded-md border border-border bg-muted/30 p-0.5">
+            <ViewTab active={view === "month"} onClick={() => setView("month")} icon={<LayoutGrid className="h-3.5 w-3.5" />} label="Month" />
+            <ViewTab active={view === "week"} onClick={() => setView("week")} icon={<CalendarDays className="h-3.5 w-3.5" />} label="Week" />
+            <ViewTab active={view === "list"} onClick={() => setView("list")} icon={<List className="h-3.5 w-3.5" />} label="List" />
+          </div>
+
+          {/* Date nav — inline on sm+, hidden on mobile (shown in row 2) */}
+          {view !== "list" && (
+            <div className="hidden sm:flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={goPrev} aria-label="Previous">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="min-w-[120px] text-center text-[13px] font-medium">{navTitle}</span>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={goNext} aria-label="Next">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="xs" className="ml-1 h-7" onClick={goToday}>Today</Button>
+            </div>
+          )}
+
+          <div className="ml-auto flex items-center gap-1.5">
+            {activeClients.length > 0 && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="xs" className="h-7 max-w-[110px] gap-1 text-[11px]">
+                    <span className="truncate">{selectedClient ? selectedClient.name : "All clients"}</span>
+                    <ChevronDown className="h-3 w-3 shrink-0 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => setSelectedClientId(null)}>All clients</DropdownMenuItem>
+                  {activeClients.map((c) => (
+                    <DropdownMenuItem key={c.id} onClick={() => setSelectedClientId(c.id)}>{c.name}</DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            <Link href="/dashboard/publishing/new">
+              <Button variant="brand" size="xs" className="h-7 gap-1 text-[11px]">
+                <Plus className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">New Post</span>
+                <span className="sm:hidden">New</span>
+              </Button>
+            </Link>
+          </div>
         </div>
 
-        {/* Date navigation — hidden in list view */}
-        {view !== "list" ? (
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={goPrev}
-              aria-label="Previous"
-            >
+        {/* Row 2: date nav on mobile only */}
+        {view !== "list" && (
+          <div className="mt-1.5 flex items-center gap-1 sm:hidden">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={goPrev} aria-label="Previous">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="min-w-[150px] text-center text-[13px] font-medium">
-              {navTitle}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={goNext}
-              aria-label="Next"
-            >
+            <span className="flex-1 text-center text-[12px] font-medium">{navTitle}</span>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={goNext} aria-label="Next">
               <ChevronRight className="h-4 w-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="xs"
-              className="ml-1 h-7"
-              onClick={goToday}
-            >
-              Today
-            </Button>
+            <Button variant="outline" size="xs" className="ml-1 h-7" onClick={goToday}>Today</Button>
           </div>
-        ) : null}
-
-        <div className="ml-auto flex items-center gap-2">
-          {/* Client filter */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="xs"
-                className="h-7 gap-1.5 text-[11px]"
-              >
-                {selectedClient ? selectedClient.name : "Viewing all"}
-                <ChevronDown className="h-3 w-3 opacity-50" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => setSelectedClientId(null)}>
-                All clients
-              </DropdownMenuItem>
-              {activeClients.map((c) => (
-                <DropdownMenuItem
-                  key={c.id}
-                  onClick={() => setSelectedClientId(c.id)}
-                >
-                  {c.name}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* New post */}
-          <Link href="/dashboard/publishing/new">
-            <Button variant="brand" size="xs" className="h-7 gap-1 text-[11px]">
-              <Plus className="h-3.5 w-3.5" />
-              New Post
-            </Button>
-          </Link>
-        </div>
+        )}
       </header>
 
       {/* Calendar content */}
@@ -237,7 +212,7 @@ function ViewTab({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1 rounded px-2.5 py-1 text-[11px] font-medium transition-colors",
+        "flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium transition-colors sm:px-2.5",
         active
           ? "bg-card text-foreground shadow-sm"
           : "text-muted-foreground hover:text-foreground",

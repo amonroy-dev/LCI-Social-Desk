@@ -61,7 +61,7 @@ export default async function ClientConnectionsPage({ params }: PageProps) {
         title="Client connections"
         subtitle="Manage Facebook and Instagram access for this client account."
       />
-      <main className="flex-1 overflow-auto px-6 py-5">
+      <main className="flex-1 overflow-auto px-3 py-4 sm:px-6 sm:py-5">
         <div className="mx-auto flex max-w-4xl flex-col gap-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">

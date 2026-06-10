@@ -34,7 +34,7 @@ export default async function NewDraftPage({
           title="New Draft"
           subtitle="Add your first client before composing posts."
         />
-        <main className="flex-1 overflow-auto px-6 py-10">
+        <main className="flex-1 overflow-auto px-3 py-6 sm:px-6 sm:py-10">
           <Card className="mx-auto flex max-w-lg flex-col items-center gap-3 p-8 text-center">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-md bg-[hsl(var(--brand-soft))] text-[hsl(var(--brand))]">
               <Building2 className="h-4 w-4" />

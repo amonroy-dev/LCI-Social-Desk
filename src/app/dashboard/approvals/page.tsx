@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -75,7 +75,7 @@ export default async function ApprovalsPage() {
         title="Client approvals"
         subtitle="Track every post you've sent to a client for review."
       />
-      <main className="flex-1 overflow-auto px-6 py-5">
+      <main className="flex-1 overflow-auto px-3 py-4 sm:px-6 sm:py-5">
         <div className="mx-auto flex max-w-5xl flex-col gap-4">
           <Card>
             <CardHeader>

@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
+﻿import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PublishingLoading() {
   return (
@@ -12,7 +12,7 @@ export default function PublishingLoading() {
           <Skeleton className="h-8 w-28 rounded-md" />
         </div>
       </header>
-      <main className="flex-1 overflow-auto px-6 py-5 space-y-3">
+      <main className="flex-1 overflow-auto px-3 py-4 space-y-3 sm:px-6 sm:py-5">
         {[...Array(4)].map((_, i) => (
           <div key={i} className="rounded-lg border border-border bg-card p-5 flex items-center gap-4">
             <Skeleton className="h-10 w-10 rounded-full shrink-0" />

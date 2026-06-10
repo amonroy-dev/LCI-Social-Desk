@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
+﻿import { Skeleton } from "@/components/ui/skeleton";
 
 function TopBarSkeleton() {
   return (
@@ -20,7 +20,7 @@ export default function DashboardLoading() {
   return (
     <>
       <TopBarSkeleton />
-      <main className="flex-1 overflow-auto px-6 py-5">
+      <main className="flex-1 overflow-auto px-3 py-4 sm:px-6 sm:py-5">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="rounded-lg border border-border bg-card p-5 space-y-3">

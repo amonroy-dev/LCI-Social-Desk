@@ -11,8 +11,8 @@ export default function DashboardIndexPage() {
         title="Workspace"
         subtitle="Operational overview of client accounts and active drafts."
       />
-      <main className="flex-1 overflow-auto px-6 py-5">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <main className="flex-1 overflow-auto px-3 py-4 sm:px-6 sm:py-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader>
               <CardTitle>Start a new draft</CardTitle>
