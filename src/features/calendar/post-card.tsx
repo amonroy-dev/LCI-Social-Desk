@@ -1,14 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  Eye,
-  MoreHorizontal,
-  Pencil,
-  Tag,
-  FileText,
-  MessageSquare,
-} from "lucide-react";
+import { Pencil, Trash2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NetworkIcon } from "@/components/network/network-icon";
 import type { Client, NetworkId, SocialPostDraft } from "@/lib/types";
@@ -90,21 +83,10 @@ export function PostCard({ post, client }: PostCardProps) {
         ) : null}
       </div>
 
-      {/* ── Footer: ... + action icons ── */}
-      <div className="flex items-center justify-between px-1.5 pb-1.5 pt-0.5">
-        <button
-          type="button"
-          aria-label="More options"
-          className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-black/8 hover:text-foreground"
-        >
-          <MoreHorizontal className="h-3.5 w-3.5" />
-        </button>
-        <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-          <IconBtn aria-label="Tag"><Tag className="h-3 w-3" /></IconBtn>
-          <IconBtn aria-label="Team conversation"><MessageSquare className="h-3 w-3" /></IconBtn>
-          <IconBtn aria-label="Preview"><Eye className="h-3 w-3" /></IconBtn>
-          <IconBtn aria-label="Edit"><Pencil className="h-3 w-3" /></IconBtn>
-        </div>
+      {/* ── Footer: edit + delete ── */}
+      <div className="flex items-center justify-end gap-0.5 px-1.5 pb-1.5 pt-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+        <IconBtn aria-label="Edit"><Pencil className="h-3 w-3" /></IconBtn>
+        <IconBtn aria-label="Delete" destructive><Trash2 className="h-3 w-3" /></IconBtn>
       </div>
     </div>
   );
@@ -113,15 +95,22 @@ export function PostCard({ post, client }: PostCardProps) {
 function IconBtn({
   children,
   "aria-label": label,
+  destructive,
 }: {
   children: React.ReactNode;
   "aria-label": string;
+  destructive?: boolean;
 }) {
   return (
     <button
       type="button"
       aria-label={label}
-      className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-black/8 hover:text-foreground"
+      className={cn(
+        "flex h-5 w-5 items-center justify-center rounded transition-colors",
+        destructive
+          ? "text-muted-foreground hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950/40"
+          : "text-muted-foreground hover:bg-black/8 hover:text-foreground",
+      )}
     >
       {children}
     </button>
