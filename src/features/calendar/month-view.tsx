@@ -12,7 +12,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { CalendarClock, Edit3 } from "lucide-react";
+import { CalendarClock, Edit3, SquarePen, StickyNote } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { Client, SocialPostDraft } from "@/lib/types";
@@ -60,7 +60,7 @@ export function MonthView({ currentDate, postsByDate, clients }: MonthViewProps)
         {weeks.map((week, wi) => (
           <div
             key={wi}
-            className="grid min-h-[148px] flex-1 grid-cols-7 divide-x divide-border"
+            className="grid min-h-[160px] flex-1 grid-cols-7 divide-x divide-border"
           >
             {week.map((day) => {
               const key = format(day, "yyyy-MM-dd");
@@ -118,7 +118,7 @@ function DayCell({
   return (
     <div
       className={cn(
-        "relative flex flex-col gap-1 overflow-hidden p-2 transition-colors",
+        "relative flex flex-col gap-1.5 overflow-hidden p-2 transition-colors",
         !inCurrentMonth && "bg-muted/10",
         hovered && inCurrentMonth && "bg-muted/5",
       )}
@@ -162,68 +162,77 @@ function DayCell({
         </div>
       ) : null}
 
-      {/* ── Hover overlay ── */}
+      {/* ── Hover CTA (matches Sprout Social's CalendarMonthCTA) ── */}
       {hovered && inCurrentMonth ? (
         <div className="flex flex-col gap-1.5">
-          {/* Ghost post silhouette — only when no real posts */}
+
+          {/* Ghost post skeleton — only on empty cells */}
           {!hasPosts ? (
-            <div className="rounded-md border border-dashed border-border/70 bg-muted/30 p-2.5">
-              <div className="flex gap-2">
-                <div className="flex flex-1 flex-col gap-1.5">
-                  {/* Fake profile row */}
-                  <div className="mb-0.5 flex items-center gap-1.5">
-                    <div className="h-4 w-4 rounded-full bg-muted-foreground/20" />
-                    <div className="h-4 w-4 rounded-full bg-muted-foreground/20" />
-                    <div className="ml-auto h-1.5 w-7 rounded-full bg-muted-foreground/10" />
-                  </div>
-                  {/* Fake text lines */}
-                  <div className="h-1.5 w-full rounded-full bg-muted-foreground/15" />
-                  <div className="h-1.5 w-4/5 rounded-full bg-muted-foreground/12" />
-                  <div className="h-1.5 w-3/5 rounded-full bg-muted-foreground/10" />
+            <div className="rounded-lg border border-dashed border-border/70 bg-card p-3">
+              {/* Row 1: two 16×16 circles + 48px stub line */}
+              <div className="mb-2.5 flex items-center gap-2">
+                <div className="flex shrink-0 gap-1.5">
+                  {/* 16×16px circle, opacity 0.2 */}
+                  <div className="h-4 w-4 rounded-full bg-muted-foreground/20" />
+                  <div className="h-4 w-4 rounded-full bg-muted-foreground/20" />
                 </div>
-                {/* Fake image square */}
-                <div className="h-10 w-10 shrink-0 rounded bg-muted-foreground/12" />
+                {/* 48px wide, 8px tall title stub */}
+                <div className="h-2 w-12 rounded bg-muted-foreground/20" />
+              </div>
+
+              {/* Row 2: text lines + 48×48px image */}
+              <div className="flex items-start gap-3">
+                <div className="flex flex-1 flex-col gap-2">
+                  {/* 8px bars: 90%, 90%, 60% — matching Sprout's exact widths */}
+                  <div className="h-2 rounded bg-muted-foreground/20" style={{ width: "90%" }} />
+                  <div className="h-2 rounded bg-muted-foreground/20" style={{ width: "90%" }} />
+                  <div className="h-2 rounded bg-muted-foreground/20" style={{ width: "60%" }} />
+                </div>
+                {/* 48×48px branded image placeholder */}
+                <div className="h-12 w-12 shrink-0 rounded-lg bg-[hsl(var(--brand))]/25" />
               </div>
             </div>
           ) : null}
 
-          {/* Action buttons */}
+          {/* "Schedule Post" — outlined, full width, centered, h-9, 13px */}
           <Link href={`/dashboard/publishing/new?date=${dateKey}`}>
             <Button
               variant="outline"
-              size="xs"
-              className="h-7 w-full justify-start gap-1.5 text-[11px]"
+              size="sm"
+              className="h-9 w-full gap-2 text-[13px] font-medium"
             >
-              <CalendarClock className="h-3 w-3 shrink-0" />
+              <CalendarClock className="h-4 w-4 shrink-0" />
               Schedule Post
             </Button>
           </Link>
+
+          {/* "Start a Draft" — brand filled, full width, centered, h-9, 13px */}
           <Link href="/dashboard/publishing/new">
             <Button
               variant="brand"
-              size="xs"
-              className="h-7 w-full justify-start gap-1.5 text-[11px]"
+              size="sm"
+              className="h-9 w-full gap-2 text-[13px] font-medium"
             >
-              <Edit3 className="h-3 w-3 shrink-0" />
+              <Edit3 className="h-4 w-4 shrink-0" />
               Start a Draft
             </Button>
           </Link>
 
-          {/* Dashed icon shortcuts */}
-          <div className="flex gap-1">
+          {/* Bottom dashed icon shortcuts */}
+          <div className="flex gap-1.5">
             <Link
               href={`/dashboard/publishing/new?date=${dateKey}`}
-              className="flex flex-1 items-center justify-center rounded border border-dashed border-border/60 py-1.5 text-muted-foreground transition-colors hover:border-border hover:bg-muted/30 hover:text-foreground"
-              title="Schedule post"
+              title="Schedule Post"
+              className="flex flex-1 items-center justify-center rounded-md border border-dashed border-border/60 py-2 text-muted-foreground transition-colors hover:border-border hover:bg-muted/30 hover:text-foreground"
             >
-              <CalendarClock className="h-3.5 w-3.5" />
+              <SquarePen className="h-4 w-4" />
             </Link>
             <Link
               href="/dashboard/publishing/new"
-              className="flex flex-1 items-center justify-center rounded border border-dashed border-border/60 py-1.5 text-muted-foreground transition-colors hover:border-border hover:bg-muted/30 hover:text-foreground"
-              title="Start a draft"
+              title="Add Note"
+              className="flex flex-1 items-center justify-center rounded-md border border-dashed border-border/60 py-2 text-muted-foreground transition-colors hover:border-border hover:bg-muted/30 hover:text-foreground"
             >
-              <Edit3 className="h-3.5 w-3.5" />
+              <StickyNote className="h-4 w-4" />
             </Link>
           </div>
         </div>
