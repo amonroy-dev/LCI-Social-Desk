@@ -71,6 +71,7 @@ export async function GET(req: NextRequest) {
       ],
       expiresAt,
       connectedBy: invite.createdBy,
+      accessToken: matched?.accessToken ?? null,
       note: result.simulated
         ? "Connected via simulated Meta OAuth — credentials not configured."
         : null,

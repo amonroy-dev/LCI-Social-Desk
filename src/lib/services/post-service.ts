@@ -2,6 +2,7 @@ import "server-only";
 
 import { postRepository } from "@/lib/repositories/post-repository";
 import { recordAudit } from "@/lib/services/audit-service";
+import { publishPostToNetworks } from "@/lib/services/meta-publisher";
 import type {
   AuditLogEvent,
   PostStatus,
@@ -56,18 +57,94 @@ export async function schedulePost(
   schedule: ScheduleState,
 ): Promise<{ draft: SocialPostDraft; event: AuditLogEvent }> {
   const withId = ensureId(draft);
+  // Combine date + time into a UTC ISO string so the cron can query it
+  const scheduledAt =
+    schedule.date && schedule.time
+      ? `${schedule.date}T${schedule.time}:00.000Z`
+      : null;
   const saved = await persist(withId, {
     schedule,
+    scheduledAt,
     status: "scheduled",
     isDraft: false,
   });
   const event = await recordAudit({
     type: "post.scheduled",
-    message: `Scheduled for ${schedule.date} at ${schedule.time}.`,
+    message: `Scheduled for ${schedule.date} at ${schedule.time} UTC.`,
     clientId: saved.clientId,
-    meta: { postId: saved.id, schedule },
+    meta: { postId: saved.id, schedule, scheduledAt },
   });
   return { draft: saved, event };
+}
+
+export async function publishScheduledPosts(): Promise<{
+  processed: number;
+  succeeded: number;
+  failed: number;
+  results: Array<{ postId: string; status: string; networks: string; error?: string }>;
+}> {
+  const due = await postRepository.listDueScheduled();
+  let succeeded = 0;
+  let failed = 0;
+  const results: Array<{ postId: string; status: string; networks: string; error?: string }> = [];
+
+  for (const post of due) {
+    try {
+      const networkResults = await publishPostToNetworks(post);
+      const allSucceeded = networkResults.every((r) => r.success);
+      const anySimulated = networkResults.some((r) => r.simulated);
+
+      const newStatus: PostStatus = !allSucceeded
+        ? "failed"
+        : anySimulated
+          ? "simulated"
+          : "published";
+
+      await postRepository.upsert({
+        ...post,
+        status: newStatus,
+        updatedAt: new Date().toISOString(),
+      });
+
+      const auditType =
+        newStatus === "published"
+          ? "post.cron_published"
+          : newStatus === "simulated"
+            ? "post.simulated"
+            : "post.failed";
+
+      await recordAudit({
+        type: auditType,
+        message: `Cron: ${newStatus} to ${post.networks.join(", ")} for ${post.clientId}.`,
+        clientId: post.clientId,
+        meta: { postId: post.id, networkResults },
+      });
+
+      if (allSucceeded) succeeded++;
+      else failed++;
+
+      results.push({
+        postId: post.id,
+        status: newStatus,
+        networks: post.networks.join(", "),
+      });
+    } catch (err) {
+      failed++;
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      await postRepository
+        .upsert({ ...post, status: "failed", updatedAt: new Date().toISOString() })
+        .catch(() => undefined);
+      await recordAudit({
+        type: "post.failed",
+        message: `Cron: unexpected error publishing ${post.id}: ${errorMsg}`,
+        clientId: post.clientId,
+        meta: { postId: post.id, error: errorMsg },
+      }).catch(() => undefined);
+      results.push({ postId: post.id, status: "failed", networks: post.networks.join(", "), error: errorMsg });
+    }
+  }
+
+  return { processed: due.length, succeeded, failed, results };
 }
 
 export async function publishPost(

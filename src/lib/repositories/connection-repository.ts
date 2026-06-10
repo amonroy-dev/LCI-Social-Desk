@@ -45,6 +45,7 @@ function fromDoc(
     updatedAt: normalizeFirestoreTimestamp(data.updatedAt) ?? "",
     publishingReady: Boolean(data.publishingReady ?? false),
     note: (data.note as string | null) ?? null,
+    accessToken: (data.accessToken as string | null) ?? null,
   };
 }
 

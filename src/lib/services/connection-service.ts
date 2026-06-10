@@ -18,6 +18,8 @@ interface UpsertConnectionInput {
   expiresAt: string | null;
   connectedBy: string | null;
   note?: string | null;
+  /** Page-level access token for publishing. */
+  accessToken?: string | null;
 }
 
 export async function upsertConnection(
@@ -47,6 +49,7 @@ export async function upsertConnection(
           : "instagram_content_publish",
       ),
     note: input.note ?? existing?.note ?? null,
+    accessToken: input.accessToken ?? existing?.accessToken ?? null,
   };
 
   await connectionRepository.upsert(next);

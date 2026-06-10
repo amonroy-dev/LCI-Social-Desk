@@ -75,6 +75,8 @@ export interface MetaExchangeResult {
     platform: SupportedNetwork;
     accountId: string;
     accountName: string;
+    /** Page-level access token (used for publishing, not user token). */
+    accessToken: string;
   }>;
   simulated: boolean;
 }
@@ -111,12 +113,13 @@ export async function exchangeCodeForTokens(
     };
 
     const pagesRes = await fetch(
-      `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,instagram_business_account&access_token=${encodeURIComponent(tokenJson.access_token)}`,
+      `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=${encodeURIComponent(tokenJson.access_token)}`,
     );
     const pagesJson = (await pagesRes.json().catch(() => ({}))) as {
       data?: Array<{
         id: string;
         name: string;
+        access_token?: string;
         instagram_business_account?: { id: string };
       }>;
     };
@@ -124,16 +127,19 @@ export async function exchangeCodeForTokens(
     const accounts: MetaExchangeResult["accounts"] = [];
     const firstPage = pagesJson.data?.[0];
     if (firstPage) {
+      const pageToken = firstPage.access_token ?? tokenJson.access_token;
       accounts.push({
         platform: "facebook",
         accountId: firstPage.id,
         accountName: firstPage.name,
+        accessToken: pageToken,
       });
       if (firstPage.instagram_business_account) {
         accounts.push({
           platform: "instagram",
           accountId: firstPage.instagram_business_account.id,
           accountName: `${firstPage.name} · Instagram`,
+          accessToken: pageToken,
         });
       }
     }
@@ -151,19 +157,22 @@ export async function exchangeCodeForTokens(
 
 function simulatedExchange(clientName: string): MetaExchangeResult {
   const slug = clientName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const simToken = `simulated_${Math.random().toString(36).slice(2)}`;
   return {
-    accessToken: `simulated_${Math.random().toString(36).slice(2)}`,
+    accessToken: simToken,
     expiresInSeconds: 60 * 60 * 24 * 60,
     accounts: [
       {
         platform: "facebook",
         accountId: `fb_${slug}`,
         accountName: `${clientName} (Facebook Page)`,
+        accessToken: simToken,
       },
       {
         platform: "instagram",
         accountId: `ig_${slug}`,
         accountName: `${clientName} (Instagram Business)`,
+        accessToken: simToken,
       },
     ],
     simulated: true,

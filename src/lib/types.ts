@@ -7,7 +7,8 @@ export type PostStatus =
   | "approved"
   | "scheduled"
   | "published"
-  | "simulated";
+  | "simulated"
+  | "failed";
 
 export type AuditEventType =
   | "draft.created"
@@ -16,6 +17,8 @@ export type AuditEventType =
   | "post.scheduled"
   | "post.published"
   | "post.simulated"
+  | "post.failed"
+  | "post.cron_published"
   | "auth.signed_in"
   | "auth.signed_out"
   | "invite.created"
@@ -112,6 +115,8 @@ export interface SocialConnection {
   publishingReady: boolean;
   /** Internal note shown in the dashboard. */
   note?: string | null;
+  /** Page-level access token used for publishing. Null for simulated connections. */
+  accessToken?: string | null;
 }
 
 export type ClientInviteStatus = "pending" | "opened" | "used" | "expired" | "revoked";
@@ -213,6 +218,8 @@ export interface SocialPostDraft {
   schedule: ScheduleState;
   status: PostStatus;
   updatedAt: string;
+  /** ISO datetime (UTC) when the post should be published. Set on scheduling. */
+  scheduledAt?: string | null;
   /** ID of the most recent PostReview for this draft, if any. */
   reviewId?: string | null;
   /** ISO timestamp the post entered pending_review, if applicable. */

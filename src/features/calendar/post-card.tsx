@@ -18,6 +18,7 @@ const STATUS_CONFIG: Record<
   },
   published: { border: "border-l-emerald-500", dot: "bg-emerald-500" },
   simulated: { border: "border-l-violet-400", dot: "bg-violet-400" },
+  failed: { border: "border-l-red-600", dot: "bg-red-600" },
 };
 
 const NETWORK_CONFIG: Record<string, { abbr: string; bg: string }> = {

@@ -27,39 +27,35 @@ export function PublishingWorkspace({
   const [state, dispatch] = useComposer(initialClientId, initialSchedule);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      {/* 50/50 two-column split — each column scrolls independently */}
-      <div className="flex min-h-0 flex-1 overflow-hidden">
+    <div className="flex min-h-0 flex-1 overflow-hidden">
 
-        {/* ── Left: composer panels ── */}
-        <section className="flex w-1/2 min-h-0 flex-col overflow-hidden border-r border-border">
-          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-5">
-            <div className="mx-auto flex max-w-2xl flex-col gap-3">
-              <ComposerCard state={state} dispatch={dispatch} clients={clients} />
-              <FirstCommentPanel state={state} dispatch={dispatch} />
-              <WorkflowsPanel state={state} dispatch={dispatch} />
-              <TagsPanel state={state} dispatch={dispatch} />
-              <SchedulePanel state={state} dispatch={dispatch} />
-            </div>
+      {/* ── Left: composer panels + action bar ── */}
+      <section className="flex w-1/2 min-h-0 flex-col overflow-hidden border-r border-border">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-5">
+          <div className="mx-auto flex max-w-2xl flex-col gap-3">
+            <ComposerCard state={state} dispatch={dispatch} clients={clients} />
+            <FirstCommentPanel state={state} dispatch={dispatch} />
+            <WorkflowsPanel state={state} dispatch={dispatch} />
+            <TagsPanel state={state} dispatch={dispatch} />
+            <SchedulePanel state={state} dispatch={dispatch} />
           </div>
-        </section>
+        </div>
+        {/* Action bar pinned to bottom of the left column only */}
+        <ActionBar
+          state={state}
+          dispatch={dispatch}
+          clients={clients}
+          emailConfigured={emailConfigured}
+        />
+      </section>
 
-        {/* ── Right: network preview ── */}
-        <aside className="flex w-1/2 min-h-0 flex-col overflow-hidden bg-muted/30">
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-5 py-5">
-            <PreviewPanel state={state} clients={clients} />
-          </div>
-        </aside>
+      {/* ── Right: network preview ── */}
+      <aside className="flex w-1/2 min-h-0 flex-col overflow-hidden bg-muted/30">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-5 py-5">
+          <PreviewPanel state={state} clients={clients} />
+        </div>
+      </aside>
 
-      </div>
-
-      {/* Action bar — always pinned to bottom of workspace, never overflows sidebar */}
-      <ActionBar
-        state={state}
-        dispatch={dispatch}
-        clients={clients}
-        emailConfigured={emailConfigured}
-      />
     </div>
   );
 }

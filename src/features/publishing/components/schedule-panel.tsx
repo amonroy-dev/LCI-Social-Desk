@@ -10,8 +10,15 @@ import {
   Trash2,
 } from "lucide-react";
 import { format } from "date-fns";
+
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import type { ComposerAction, ComposerState } from "../state";
 import { CollapsiblePanel } from "./collapsible-panel";
 
@@ -21,10 +28,10 @@ const MINUTES = [
   "30", "35", "40", "45", "50", "55",
 ];
 const OPTIMAL_TIMES = [
-  { label: "9:00 AM", h: 9, m: "00", p: "AM" as const },
+  { label: "9:00 AM",  h: 9,  m: "00", p: "AM" as const },
   { label: "12:00 PM", h: 12, m: "00", p: "PM" as const },
-  { label: "3:00 PM", h: 3, m: "00", p: "PM" as const },
-  { label: "6:00 PM", h: 6, m: "00", p: "PM" as const },
+  { label: "3:00 PM",  h: 3,  m: "00", p: "PM" as const },
+  { label: "6:00 PM",  h: 6,  m: "00", p: "PM" as const },
 ];
 
 function parseTime(time: string | null): {
@@ -51,12 +58,13 @@ function toTime24(hour: number, minute: string, period: "AM" | "PM"): string {
   return `${String(h).padStart(2, "0")}:${minute}`;
 }
 
-function displayDate(date: string | null): string {
-  if (!date) return "Pick a date";
+/** Parse "yyyy-MM-dd" string → Date at midnight local. Returns undefined if null. */
+function parseDate(dateStr: string | null): Date | undefined {
+  if (!dateStr) return undefined;
   try {
-    return format(new Date(`${date}T00:00:00`), "EEE, MMM d, yyyy");
+    return new Date(`${dateStr}T00:00:00`);
   } catch {
-    return date;
+    return undefined;
   }
 }
 
@@ -67,7 +75,7 @@ interface SchedulePanelProps {
 
 export function SchedulePanel({ state, dispatch }: SchedulePanelProps) {
   const { schedule } = state.draft;
-  const dateInputRef = React.useRef<HTMLInputElement>(null);
+  const [calendarOpen, setCalendarOpen] = React.useState(false);
   const [optimalOpen, setOptimalOpen] = React.useState(false);
   const [advancedOpen, setAdvancedOpen] = React.useState(false);
   const [extraSlots, setExtraSlots] = React.useState(false);
@@ -78,7 +86,6 @@ export function SchedulePanel({ state, dispatch }: SchedulePanelProps) {
   const [minute, setMinute] = React.useState(parsed.minute);
   const [period, setPeriod] = React.useState<"AM" | "PM">(parsed.period);
 
-  // Sync if schedule changes externally (e.g. URL pre-fill)
   React.useEffect(() => {
     const p = parseTime(schedule.time);
     setHour(p.hour);
@@ -96,10 +103,6 @@ export function SchedulePanel({ state, dispatch }: SchedulePanelProps) {
       type: "set-schedule",
       schedule: { date: d, time: d ? toTime24(h, m, p) : null },
     });
-  };
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    commit(e.target.value || null, hour, minute, period);
   };
 
   const handleHour = (v: number) => {
@@ -147,31 +150,46 @@ export function SchedulePanel({ state, dispatch }: SchedulePanelProps) {
       <div className="space-y-4">
         {/* ── Date + Time row ── */}
         <div className="flex flex-wrap items-end gap-x-3 gap-y-2">
-          {/* Date trigger */}
+
+          {/* Calendar date picker */}
           <div className="flex flex-col gap-1">
             <span className="text-[11px] font-medium text-muted-foreground">
               Date
             </span>
-            <div className="relative">
-              {/* Invisible native date input layered over the button */}
-              <input
-                ref={dateInputRef}
-                type="date"
-                value={schedule.date ?? ""}
-                onChange={handleDateChange}
-                className="absolute inset-0 cursor-pointer opacity-0"
-                aria-label="Schedule date"
-              />
-              <div
-                className={cn(
-                  "flex h-8 items-center gap-2 rounded-md border border-border bg-card px-3 text-[12px] pointer-events-none",
-                  hasDate ? "text-foreground" : "text-muted-foreground",
-                )}
-              >
-                <CalendarDays className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                {displayDate(schedule.date)}
-              </div>
-            </div>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "flex h-8 items-center gap-2 rounded-md border border-border bg-card px-3 text-[12px] transition-colors hover:bg-muted/50",
+                    hasDate ? "text-foreground" : "text-muted-foreground",
+                  )}
+                >
+                  <CalendarDays className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  {hasDate
+                    ? format(parseDate(schedule.date)!, "EEE, MMM d, yyyy")
+                    : "Pick a date"}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={parseDate(schedule.date)}
+                  onSelect={(date) => {
+                    if (date) {
+                      const formatted = format(date, "yyyy-MM-dd");
+                      commit(formatted, hour, minute, period);
+                    } else {
+                      commit(null, hour, minute, period);
+                    }
+                    setCalendarOpen(false);
+                  }}
+                  disabled={(date) =>
+                    date < new Date(new Date().setHours(0, 0, 0, 0))
+                  }
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Time dropdowns */}

@@ -248,6 +248,7 @@ function StatusBadge({ status }: { status: ComposerState["draft"]["status"] }) {
     scheduled: { label: "Scheduled", variant: "warning" },
     published: { label: "Published", variant: "success" },
     simulated: { label: "Simulated", variant: "outline" },
+    failed: { label: "Failed", variant: "destructive" },
   };
   const cfg = map[status];
   return <Badge variant={cfg.variant}>{cfg.label}</Badge>;

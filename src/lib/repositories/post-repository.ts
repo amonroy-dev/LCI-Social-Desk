@@ -27,7 +27,10 @@ const memory: Map<string, SocialPostDraft> = (() => {
 })();
 
 function toRecord(post: SocialPostDraft): Record<string, unknown> {
-  return { ...post };
+  const rec: Record<string, unknown> = { ...post };
+  // Ensure scheduledAt is always present so Firestore can query it
+  if (!rec.scheduledAt) rec.scheduledAt = null;
+  return rec;
 }
 
 function fromDoc(id: string, data: Record<string, unknown>): SocialPostDraft {
@@ -46,6 +49,7 @@ function fromDoc(id: string, data: Record<string, unknown>): SocialPostDraft {
     },
     status: (data.status as SocialPostDraft["status"]) ?? "draft",
     updatedAt: normalizeFirestoreTimestamp(data.updatedAt) ?? "",
+    scheduledAt: (data.scheduledAt as string | null) ?? null,
     reviewId: (data.reviewId as string | null) ?? null,
     submittedForReviewAt: normalizeFirestoreTimestamp(data.submittedForReviewAt),
     lastReviewDecision:
@@ -139,6 +143,32 @@ export const postRepository = {
         all = all.filter((p) => set.has(p.status));
       }
       return all;
+    }
+  },
+
+  /** Returns all scheduled posts whose scheduledAt has passed (i.e. ready to publish). */
+  async listDueScheduled(): Promise<SocialPostDraft[]> {
+    const now = new Date().toISOString();
+    const db = getAdminFirestore();
+    if (!db) {
+      return Array.from(memory.values()).filter(
+        (p) => p.status === "scheduled" && !!p.scheduledAt && p.scheduledAt <= now,
+      );
+    }
+    try {
+      const snap = await db
+        .collection(COLLECTIONS.socialPosts)
+        .where("status", "==", "scheduled")
+        .where("scheduledAt", "<=", now)
+        .get();
+      return snap.docs.map((d) => fromDoc(d.id, d.data()));
+    } catch (err) {
+      const e = classifyFirestoreError(err);
+      // eslint-disable-next-line no-console
+      console.warn(`[posts] listDueScheduled failed: ${e.kind} ${e.message} — falling back to in-memory`);
+      return Array.from(memory.values()).filter(
+        (p) => p.status === "scheduled" && !!p.scheduledAt && p.scheduledAt <= now,
+      );
     }
   },
 
