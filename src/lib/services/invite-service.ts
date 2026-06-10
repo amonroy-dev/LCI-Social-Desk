@@ -35,11 +35,18 @@ function base64UrlDecode(s: string): ArrayBuffer {
 }
 
 function getInviteSecret(): string {
-  return (
-    process.env.INVITE_TOKEN_SECRET ??
-    process.env.SESSION_SECRET ??
-    "lci-dev-invite-secret-please-rotate"
-  );
+  const secret =
+    process.env.INVITE_TOKEN_SECRET ?? process.env.SESSION_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "INVITE_TOKEN_SECRET is not set. Set it in your environment variables before generating invite links.",
+      );
+    }
+    // Dev-only fallback — never reaches production
+    return "lci-dev-invite-secret-set-INVITE_TOKEN_SECRET-in-env";
+  }
+  return secret;
 }
 
 export async function signInviteId(id: string): Promise<string> {
@@ -107,7 +114,7 @@ export async function createInvite(
     throw new Error(`Unknown client: ${input.clientId}`);
   }
   const now = new Date();
-  const id = `inv_${Math.random().toString(36).slice(2, 12)}`;
+  const id = `inv_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
   const invite: ClientInvite = {
     id,
     clientId: input.clientId,

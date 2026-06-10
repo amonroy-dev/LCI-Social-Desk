@@ -5,7 +5,7 @@ import { ArrowRight, Heart, Lightbulb, Shield, Users } from "lucide-react";
 export const metadata: Metadata = {
   title: "About — LCI Marketing",
   description:
-    "Learn about LCI Marketing — a passionate team of social media strategists, creators, and analysts helping brands grow their online presence.",
+    "LCI Marketing is a boutique social media agency founded by Antonio Monroy and Ryan Alexander. We work closely with a small number of brands to build a real social presence.",
 };
 
 const VALUES = [
@@ -33,24 +33,14 @@ const VALUES = [
 
 const TEAM = [
   {
-    name: "Alexandra Monroy",
-    role: "Founder & Creative Director",
-    bio: "With over a decade in digital marketing, Alex founded LCI to help brands build genuine connections on social media.",
+    name: "Antonio Monroy",
+    role: "Co-Founder",
+    bio: "Antonio leads technology and product at LCI. He built LCI Social Desk — our proprietary scheduling and client management platform — and drives the systems that keep everything running smoothly. He believes good creative work lives or dies on the infrastructure behind it.",
   },
   {
-    name: "Jordan Ellis",
-    role: "Head of Strategy",
-    bio: "Former agency strategist at a top-10 firm. Jordan builds data-driven social strategies that translate to real business growth.",
-  },
-  {
-    name: "Mia Takahashi",
-    role: "Lead Content Creator",
-    bio: "Award-winning designer and visual storyteller. Mia crafts the scroll-stopping content that sets our clients apart.",
-  },
-  {
-    name: "Daniel Okafor",
-    role: "Analytics & Paid Media Lead",
-    bio: "Data nerd and performance marketer. Daniel turns numbers into insights and ad spend into measurable ROI.",
+    name: "Ryan Alexander",
+    role: "Co-Founder",
+    bio: "Ryan leads strategy and client relationships at LCI. He focuses on understanding what actually moves a brand forward — building content strategies rooted in the business goals behind them, not just aesthetics.",
   },
 ];
 
@@ -62,13 +52,13 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <h1 className="text-[40px] font-bold leading-[1.1] tracking-tight text-foreground sm:text-[52px]">
-              A team that lives and breathes{" "}
+              A small team with a{" "}
               <span className="bg-gradient-to-r from-[hsl(var(--brand))] to-[hsl(199,80%,50%)] bg-clip-text text-transparent">
-                social
+                clear focus
               </span>
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[17px] leading-relaxed text-muted-foreground">
-              We&apos;re strategists, creators, and analysts who are obsessed with helping brands build real audiences and drive real results.
+              We&apos;re a two-person founding team that works closely with a select group of brands. No layers, no hand-offs — just focused, personal social media management.
             </p>
           </div>
         </div>
@@ -83,16 +73,16 @@ export default function AboutPage() {
             </h2>
             <div className="space-y-5 text-[15px] leading-relaxed text-muted-foreground">
               <p>
-                LCI Marketing started with a simple frustration: too many businesses were either neglecting social media entirely or wasting resources on content that wasn&apos;t driving results. We saw an opportunity to change that.
+                LCI Marketing was founded in 2025 by Antonio Monroy and Ryan Alexander. We started with a simple observation: most small and mid-sized businesses either ignore social media entirely, or they hand it off to someone without a real strategy — and then wonder why it isn&apos;t working.
               </p>
               <p>
-                Founded in 2016, we built LCI on the principle that great social media management requires three things: deep strategy, exceptional creative, and relentless data-driven optimization. No shortcuts, no template-driven approaches — just thoughtful work tailored to each brand.
+                We built LCI to do it differently. Small enough to give every client real attention. Focused enough to actually know what we&apos;re doing. And honest enough to tell you when something isn&apos;t working and course-correct fast.
               </p>
               <p>
-                Today, we manage social media for over 50 brands across healthcare, real estate, hospitality, professional services, and e-commerce. Our team has driven over 3 million engagements and helped clients see an average 250% increase in reach within their first year with us.
+                One of the things we&apos;re most proud of is building our own platform — LCI Social Desk. It&apos;s the tool we use to manage scheduling, client approvals, and social connections. When you work with us, you get a direct link to review and approve posts before they go live. No logins, no friction — just a simple link in your inbox.
               </p>
               <p>
-                We&apos;ve also built our own proprietary publishing platform — LCI Social Desk — to streamline how we collaborate with clients, schedule content, and manage social connections. It&apos;s the same tool our clients use to review and approve content before it goes live.
+                We&apos;re early in our journey and we&apos;re intentional about who we take on. If you want a partner who&apos;s invested in your brand — not just your invoice — let&apos;s talk.
               </p>
             </div>
           </div>
@@ -131,21 +121,21 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <h2 className="text-[28px] font-bold tracking-tight text-foreground sm:text-[34px]">
-              Meet the team
+              The founders
             </h2>
             <p className="mt-4 text-[15px] text-muted-foreground">
-              Small team, big impact. Every client works directly with our senior team.
+              Two co-founders. When you hire LCI, you work directly with both of us.
             </p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mx-auto grid max-w-2xl gap-6 sm:grid-cols-2">
             {TEAM.map(({ name, role, bio }) => (
-              <div key={name} className="rounded-2xl border border-border/60 bg-[hsl(220,16%,98%)] p-6 text-center">
+              <div key={name} className="rounded-2xl border border-border/60 bg-[hsl(220,16%,98%)] p-8 text-center">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[hsl(var(--brand))]/10 text-[20px] font-bold text-[hsl(var(--brand))]">
                   {name.split(" ").map((n) => n[0]).join("")}
                 </div>
-                <h3 className="text-[15px] font-semibold text-foreground">{name}</h3>
+                <h3 className="text-[16px] font-semibold text-foreground">{name}</h3>
                 <p className="mt-0.5 text-[12.5px] font-medium text-[hsl(var(--brand))]">{role}</p>
-                <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{bio}</p>
+                <p className="mt-4 text-[13.5px] leading-relaxed text-muted-foreground">{bio}</p>
               </div>
             ))}
           </div>
@@ -159,7 +149,7 @@ export default function AboutPage() {
             Want to work with us?
           </h2>
           <p className="mx-auto mt-4 max-w-lg text-[16px] leading-relaxed text-muted-foreground">
-            We&apos;d love to hear about your brand and discuss how we can help you grow.
+            We&apos;re accepting new clients. Let&apos;s have an honest conversation about your brand and figure out if we&apos;re the right fit.
           </p>
           <Link
             href="/contact"

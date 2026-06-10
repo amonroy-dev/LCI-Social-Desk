@@ -4,6 +4,7 @@ import {
   ArrowRight,
   BarChart3,
   Calendar,
+  CheckCircle2,
   Globe,
   Instagram,
   Megaphone,
@@ -11,7 +12,6 @@ import {
   PenTool,
   Sparkles,
   Target,
-  TrendingUp,
   Users,
   Zap,
 } from "lucide-react";
@@ -19,7 +19,7 @@ import {
 export const metadata: Metadata = {
   title: "LCI Marketing — Social Media Management Agency",
   description:
-    "LCI Marketing is a full-service social media management agency. We help brands grow their presence across Facebook, Instagram, and beyond with strategy, content, and real results.",
+    "LCI Marketing is a boutique social media management agency. We help growing brands build a real presence on Facebook and Instagram — strategy, content, and transparent results.",
 };
 
 export default function HomePage() {
@@ -35,16 +35,16 @@ export default function HomePage() {
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[hsl(var(--brand))]/20 bg-[hsl(var(--brand-soft))] px-4 py-1.5 text-[12.5px] font-medium text-[hsl(var(--brand))]">
               <Sparkles className="h-3.5 w-3.5" />
-              Full-service social media management
+              Boutique social media management
             </div>
             <h1 className="text-[40px] font-bold leading-[1.1] tracking-tight text-foreground sm:text-[52px] lg:text-[60px]">
-              Grow your brand with{" "}
+              Social media management that actually{" "}
               <span className="bg-gradient-to-r from-[hsl(var(--brand))] to-[hsl(199,80%,50%)] bg-clip-text text-transparent">
-                social that works
+                feels personal
               </span>
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-[17px] leading-relaxed text-muted-foreground">
-              We manage your social presence end-to-end — strategy, content creation, publishing, community management, and analytics — so you can focus on running your business.
+              We&apos;re a small agency that works closely with a select group of brands — building strategy, creating content, and managing your social presence like it&apos;s our own.
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
@@ -55,10 +55,10 @@ export default function HomePage() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href="/results"
+                href="/services"
                 className="inline-flex h-12 items-center gap-2 rounded-xl border border-border bg-white px-7 text-[15px] font-semibold text-foreground shadow-sm transition-colors hover:bg-muted"
               >
-                See our results
+                What we do
               </Link>
             </div>
           </div>
@@ -94,10 +94,10 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <h2 className="text-[32px] font-bold tracking-tight text-foreground sm:text-[38px]">
-              Everything your brand needs to thrive on social
+              Everything your brand needs to show up on social
             </h2>
             <p className="mt-4 text-[16px] leading-relaxed text-muted-foreground">
-              We handle the full lifecycle — from strategy and content creation to publishing and performance analysis.
+              From building a strategy to publishing content and reviewing what worked — we handle the full picture.
             </p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -105,32 +105,32 @@ export default function HomePage() {
               {
                 icon: <Target className="h-6 w-6" />,
                 title: "Strategy & Planning",
-                description: "Custom social strategies aligned with your business goals, audience insights, and competitive landscape.",
+                description: "We learn your brand, your audience, and your goals — then build a content strategy tailored to your business, not a template.",
               },
               {
                 icon: <PenTool className="h-6 w-6" />,
                 title: "Content Creation",
-                description: "Scroll-stopping graphics, videos, and copy crafted by our in-house creative team for every platform.",
+                description: "Graphics, captions, and short-form video concepts designed to stop the scroll and actually say something worth reading.",
               },
               {
                 icon: <Calendar className="h-6 w-6" />,
                 title: "Publishing & Scheduling",
-                description: "Consistent, optimized posting across all your channels with our proprietary publishing tools.",
+                description: "Consistent posting across your channels, managed through our own platform. You approve everything before it goes live.",
               },
               {
                 icon: <MessageCircle className="h-6 w-6" />,
                 title: "Community Management",
-                description: "Real-time engagement with your audience — responding to comments, messages, and brand mentions.",
+                description: "We keep an eye on your comments and messages so your audience feels seen — and your brand looks responsive.",
               },
               {
                 icon: <BarChart3 className="h-6 w-6" />,
                 title: "Analytics & Reporting",
-                description: "Monthly reports with actionable insights, growth metrics, and clear ROI measurement.",
+                description: "Straightforward reporting on what matters — reach, engagement, growth — with no vanity metrics dressed up as wins.",
               },
               {
-                icon: <Megaphone className="h-6 w-6" />,
-                title: "Paid Social Advertising",
-                description: "Data-driven ad campaigns on Facebook, Instagram, and more to amplify your reach and conversions.",
+                icon: <Users className="h-6 w-6" />,
+                title: "Direct Founder Access",
+                description: "You work directly with us, not an account manager or junior coordinator. Every client gets our full attention.",
               },
             ].map(({ icon, title, description }) => (
               <div
@@ -160,21 +160,42 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Stats ── */}
+      {/* ── Why boutique ── */}
       <section className="border-y border-border/60 bg-[hsl(222,24%,10%)] py-16 lg:py-20">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mb-10 text-center">
+            <h2 className="text-[26px] font-bold tracking-tight text-white sm:text-[32px]">
+              Why work with a small agency?
+            </h2>
+            <p className="mx-auto mt-3 max-w-lg text-[15px] leading-relaxed text-white/50">
+              There are real advantages to working with a team that stays small on purpose.
+            </p>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { value: "50+", label: "Clients managed" },
-              { value: "3M+", label: "Engagements driven" },
-              { value: "250%", label: "Average growth in reach" },
-              { value: "10+", label: "Years of experience" },
-            ].map(({ value, label }) => (
-              <div key={label} className="text-center">
-                <div className="text-[42px] font-bold tracking-tight text-white">
-                  {value}
-                </div>
-                <div className="mt-1 text-[14px] text-white/50">{label}</div>
+              {
+                heading: "You talk to the people doing the work",
+                body: "No account managers relaying your feedback. You work directly with the founders.",
+              },
+              {
+                heading: "We built our own platform",
+                body: "LCI Social Desk is our proprietary tool for scheduling, client approvals, and connection management — built specifically for how we work.",
+              },
+              {
+                heading: "Selective by design",
+                body: "We take on a limited number of clients so we can give each one the attention it deserves.",
+              },
+              {
+                heading: "No long-term lock-in",
+                body: "We earn your business month to month. If we&apos;re not delivering value, you&apos;re not stuck.",
+              },
+            ].map(({ heading, body }) => (
+              <div key={heading} className="flex flex-col gap-3">
+                <CheckCircle2 className="h-5 w-5 text-[hsl(var(--brand))]" />
+                <h3 className="text-[15px] font-semibold leading-snug text-white">
+                  {heading}
+                </h3>
+                <p className="text-[13.5px] leading-relaxed text-white/50">{body}</p>
               </div>
             ))}
           </div>
@@ -197,17 +218,17 @@ export default function HomePage() {
               {
                 step: "01",
                 title: "Discovery & strategy",
-                description: "We learn your brand, audience, and goals. Then we build a custom strategy and content calendar tailored to your business.",
+                description: "We learn your brand, audience, and goals. Then we build a custom strategy and content calendar tailored to your business — not a copy-paste from someone else's playbook.",
               },
               {
                 step: "02",
                 title: "Create & publish",
-                description: "Our team creates and schedules content across your channels. You review and approve every post from a secure link we email you — no extra logins — before anything goes live.",
+                description: "Our team creates and schedules content across your channels. You review and approve every post from a secure link — no extra logins — before anything goes live.",
               },
               {
                 step: "03",
-                title: "Analyze & grow",
-                description: "We continuously optimize based on performance data, refining what works and scaling your results month over month.",
+                title: "Review & refine",
+                description: "We share clear reporting on what's working and what isn't. No spin. Then we adjust, test, and keep improving — month after month.",
               },
             ].map(({ step, title, description }) => (
               <div key={step} className="relative rounded-2xl border border-border/60 bg-[hsl(220,16%,98%)] p-8">
@@ -226,55 +247,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Testimonials ── */}
+      {/* ── Meet the founders ── */}
       <section className="bg-[hsl(220,16%,96%)] py-20 lg:py-28">
         <div className="mx-auto max-w-7xl px-5 lg:px-8">
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <h2 className="text-[32px] font-bold tracking-tight text-foreground sm:text-[38px]">
-              Trusted by brands that care about growth
+              Meet the founders
             </h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
+              LCI is a two-person founding team. When you work with us, you work with us.
+            </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="mx-auto grid max-w-2xl gap-6 sm:grid-cols-2">
             {[
               {
-                quote: "LCI transformed our social presence. We went from posting randomly to having a real strategy that drives leads every month.",
-                name: "Sarah Chen",
-                role: "Marketing Director, Northshore Dental",
-                stat: "312% increase in engagement",
+                name: "Antonio Monroy",
+                role: "Co-Founder",
+                bio: "Antonio leads technology and product at LCI. He built LCI Social Desk — our proprietary management platform — and believes that great creative work is only as good as the systems behind it.",
               },
               {
-                quote: "The team feels like an extension of ours. They understand our brand voice perfectly and the results speak for themselves.",
-                name: "Marcus Rivera",
-                role: "CEO, Rivera Home Designs",
-                stat: "2.5x follower growth in 6 months",
+                name: "Ryan Alexander",
+                role: "Co-Founder",
+                bio: "Ryan drives strategy and client relationships at LCI. He&apos;s obsessed with understanding what actually moves the needle for a brand and building the content plans that get it there.",
               },
-              {
-                quote: "Their analytics and reporting gave us clarity we never had before. We finally know exactly what's working and why.",
-                name: "Priya Nair",
-                role: "Owner, Lotus Wellness Studio",
-                stat: "40% reduction in cost per lead",
-              },
-            ].map(({ quote, name, role, stat }) => (
+            ].map(({ name, role, bio }) => (
               <div
                 key={name}
-                className="flex flex-col rounded-2xl border border-border/60 bg-white p-7"
+                className="rounded-2xl border border-border/60 bg-white p-8 text-center"
               >
-                <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-[hsl(var(--brand-soft))] px-3 py-1 text-[11.5px] font-semibold text-[hsl(var(--brand))]">
-                  <TrendingUp className="h-3 w-3" />
-                  {stat}
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[hsl(var(--brand))]/10 text-[20px] font-bold text-[hsl(var(--brand))]">
+                  {name.split(" ").map((n) => n[0]).join("")}
                 </div>
-                <blockquote className="flex-1 text-[14.5px] leading-relaxed text-foreground">
-                  &ldquo;{quote}&rdquo;
-                </blockquote>
-                <div className="mt-5 flex items-center gap-3 border-t border-border/60 pt-5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[hsl(var(--brand))]/10 font-semibold text-[hsl(var(--brand))] text-[13px]">
-                    {name.split(" ").map((n) => n[0]).join("")}
-                  </div>
-                  <div>
-                    <div className="text-[13px] font-semibold text-foreground">{name}</div>
-                    <div className="text-[12px] text-muted-foreground">{role}</div>
-                  </div>
-                </div>
+                <h3 className="text-[16px] font-semibold text-foreground">{name}</h3>
+                <p className="mt-0.5 text-[12.5px] font-medium text-[hsl(var(--brand))]">{role}</p>
+                <p className="mt-4 text-[13.5px] leading-relaxed text-muted-foreground">{bio}</p>
               </div>
             ))}
           </div>
@@ -289,17 +295,17 @@ export default function HomePage() {
             <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-[hsl(var(--brand))]/10 blur-3xl" />
             <div className="relative">
               <h2 className="text-[28px] font-bold tracking-tight text-white sm:text-[36px]">
-                Ready to grow your social presence?
+                Ready to build something real?
               </h2>
               <p className="mx-auto mt-4 max-w-lg text-[16px] leading-relaxed text-white/60">
-                Let&apos;s talk about your goals and build a strategy that drives real results for your brand.
+                We&apos;re accepting new clients. Let&apos;s have an honest conversation about your brand and whether we&apos;re the right fit for each other.
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link
                   href="/contact"
                   className="inline-flex h-12 items-center gap-2 rounded-xl bg-[hsl(var(--brand))] px-7 text-[15px] font-semibold text-white shadow-lg shadow-[hsl(var(--brand))]/25 transition-all hover:bg-[hsl(var(--brand))]/90"
                 >
-                  Get your free consultation
+                  Get in touch
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
