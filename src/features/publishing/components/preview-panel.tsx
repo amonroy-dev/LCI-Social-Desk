@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Eye, Sparkles, WandSparkles } from "lucide-react";
+import { ChevronDown, Eye, Info, Sparkles, WandSparkles } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NetworkIcon } from "@/components/network/network-icon";
+import { cn } from "@/lib/utils";
 import type { Client } from "@/lib/types";
 import type { ComposerState } from "../state";
 import { FacebookPreview } from "./preview/facebook-preview";
@@ -45,27 +46,24 @@ export function PreviewPanel({ state, clients }: PreviewPanelProps) {
         </div>
 
         <TabsContent value="network" className="m-0 flex-1 overflow-hidden">
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <h2 className="text-[13px] font-semibold tracking-tight text-foreground">
-                Network Preview
-              </h2>
-              <p className="mt-0.5 text-[11.5px] text-muted-foreground">
-                Preview approximates how your content will appear when
-                published. Final appearance may vary by platform.
-              </p>
-            </div>
+          {/* Info notice — matches Sprout's network_preview-panel notice */}
+          <div className="mb-3 flex gap-2 rounded-lg border border-border/50 bg-muted/30 px-3 py-2.5">
+            <Info className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
+            <p className="text-[11px] leading-snug text-muted-foreground">
+              Preview approximates how your content will appear when published.
+              Final appearance may vary by platform.
+            </p>
           </div>
 
-          <div className="flex h-full min-h-0 flex-col overflow-auto space-y-3 pb-6">
+          <div className="flex h-full min-h-0 flex-col overflow-auto space-y-2 pb-6">
             {draft.networks.length === 0 ? (
-              <Card className="border-dashed bg-muted/40 p-6 text-center text-[12px] text-muted-foreground">
-                <div className="mb-2 text-[14px] font-semibold text-foreground">
+              <Card className="border-dashed bg-muted/40 p-6 text-center">
+                <div className="mb-1.5 text-[13.5px] font-semibold text-foreground">
                   Start your post to preview it.
                 </div>
-                <div className="max-w-sm mx-auto text-sm leading-6 text-muted-foreground">
-                  Choose a network, add your caption, and attach media to see how the
-                  post will look in the Facebook, Instagram, or LinkedIn preview.
+                <div className="mx-auto max-w-xs text-[12px] leading-relaxed text-muted-foreground">
+                  Choose a network, add your caption, and attach media to see a
+                  realistic post preview.
                 </div>
               </Card>
             ) : null}
@@ -153,13 +151,31 @@ function PreviewSection({
   networkId: "facebook" | "instagram" | "linkedin";
   children: React.ReactNode;
 }) {
+  const [open, setOpen] = React.useState(true);
+
   return (
-    <section className="overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
-      <div className="flex items-center gap-1.5 border-b border-border px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-        <NetworkIcon network={networkId} />
-        {label}
-      </div>
-      <div className="p-4">{children}</div>
+    <section className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      {/* Collapsible toggle header — 48px tall, matches Sprout's SproutToggle__trigger */}
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex h-12 w-full items-center justify-between border-b border-border/60 px-4 text-left transition-colors hover:bg-muted/30"
+      >
+        <div className="flex items-center gap-2.5">
+          <NetworkIcon network={networkId} />
+          <span className="text-[13px] font-semibold text-foreground">
+            {label}
+          </span>
+        </div>
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 text-muted-foreground transition-transform duration-200",
+            !open && "-rotate-90",
+          )}
+        />
+      </button>
+      {open ? <div>{children}</div> : null}
     </section>
   );
 }
