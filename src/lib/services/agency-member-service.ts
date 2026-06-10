@@ -189,7 +189,6 @@ export async function resolveRoleForVerifiedUser(input: {
     return byEmail.role;
   }
 
-  // 3. Bootstrap path: create a member document using env-allowlist role.
-  const created = await upsertAgencyMemberOnSignIn(input);
-  return created.role;
+  // 3. No matching member — access is restricted to pre-provisioned accounts only.
+  throw new Error("You are not authorized to access this workspace. Contact your administrator to be added.");
 }
