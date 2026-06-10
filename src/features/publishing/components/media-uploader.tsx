@@ -6,6 +6,10 @@ import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MediaAsset } from "@/lib/types";
 
+export interface MediaUploaderHandle {
+  triggerUpload: () => void;
+}
+
 interface MediaUploaderProps {
   media: MediaAsset[];
   onAdd: (assets: MediaAsset[]) => void;
@@ -22,9 +26,16 @@ function toAsset(file: File): MediaAsset {
   };
 }
 
-export function MediaUploader({ media, onAdd, onRemove }: MediaUploaderProps) {
+export const MediaUploader = React.forwardRef<
+  MediaUploaderHandle,
+  MediaUploaderProps
+>(function MediaUploader({ media, onAdd, onRemove }, ref) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = React.useState(false);
+
+  React.useImperativeHandle(ref, () => ({
+    triggerUpload: () => inputRef.current?.click(),
+  }));
 
   const handleFiles = (fileList: FileList | null) => {
     if (!fileList) return;
@@ -118,4 +129,4 @@ export function MediaUploader({ media, onAdd, onRemove }: MediaUploaderProps) {
       ) : null}
     </div>
   );
-}
+});

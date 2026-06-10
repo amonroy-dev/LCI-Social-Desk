@@ -12,7 +12,7 @@ import type { Client } from "@/lib/types";
 import type { ComposerAction, ComposerState } from "../state";
 import { ClientSwitcher } from "./client-switcher";
 import { ComposerToolbar } from "./composer-toolbar";
-import { MediaUploader } from "./media-uploader";
+import { MediaUploader, type MediaUploaderHandle } from "./media-uploader";
 import { NetworkToggles } from "./network-toggles";
 
 const CAPTION_LIMIT = 2200;
@@ -27,6 +27,42 @@ export function ComposerCard({ state, dispatch, clients }: ComposerCardProps) {
   const { draft } = state;
   const captionLength = draft.caption.length;
   const overLimit = captionLength > CAPTION_LIMIT;
+
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const mediaRef = React.useRef<MediaUploaderHandle>(null);
+  // Save selection before focus leaves the textarea (e.g. when clicking toolbar)
+  const selectionRef = React.useRef<{ start: number; end: number }>({ start: 0, end: 0 });
+
+  const handleCaptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    dispatch({ type: "set-caption", caption: e.target.value });
+  };
+
+  const saveSelection = () => {
+    const el = textareaRef.current;
+    if (el) {
+      selectionRef.current = {
+        start: el.selectionStart ?? draft.caption.length,
+        end: el.selectionEnd ?? draft.caption.length,
+      };
+    }
+  };
+
+  const insertAtCursor = (text: string) => {
+    const { start, end } = selectionRef.current;
+    const caption = draft.caption;
+    const newCaption = caption.slice(0, start) + text + caption.slice(end);
+    dispatch({ type: "set-caption", caption: newCaption });
+    // Restore focus + move cursor after inserted text
+    requestAnimationFrame(() => {
+      const el = textareaRef.current;
+      if (el) {
+        el.focus();
+        const pos = start + text.length;
+        el.setSelectionRange(pos, pos);
+        selectionRef.current = { start: pos, end: pos };
+      }
+    });
+  };
 
   return (
     <Card>
@@ -65,10 +101,12 @@ export function ComposerCard({ state, dispatch, clients }: ComposerCardProps) {
       <CardContent className="space-y-4 pt-4">
         <div className="relative">
           <Textarea
+            ref={textareaRef}
             value={draft.caption}
-            onChange={(e) =>
-              dispatch({ type: "set-caption", caption: e.target.value })
-            }
+            onChange={handleCaptionChange}
+            onSelect={saveSelection}
+            onKeyUp={saveSelection}
+            onClick={saveSelection}
             placeholder="Your first post starts here. Save a draft to preview how it will look across networks."
             className="min-h-[160px] resize-y pr-20 text-[13.5px] leading-relaxed"
             maxLength={CAPTION_LIMIT + 200}
@@ -83,6 +121,7 @@ export function ComposerCard({ state, dispatch, clients }: ComposerCardProps) {
         </div>
 
         <MediaUploader
+          ref={mediaRef}
           media={draft.media}
           onAdd={(assets) => dispatch({ type: "add-media", media: assets })}
           onRemove={(id) => dispatch({ type: "remove-media", id })}
@@ -90,7 +129,10 @@ export function ComposerCard({ state, dispatch, clients }: ComposerCardProps) {
       </CardContent>
 
       <div className="flex items-center justify-between border-t border-border bg-muted/40 px-5 py-2.5">
-        <ComposerToolbar />
+        <ComposerToolbar
+          onInsertText={insertAtCursor}
+          onTriggerMedia={() => mediaRef.current?.triggerUpload()}
+        />
         <div className="flex items-center gap-4">
           <label className="flex items-center gap-2 text-[12px] font-medium text-foreground">
             <Switch
