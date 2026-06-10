@@ -206,7 +206,7 @@ export function ReportDocument({ data, year, month, clientName, isDemo }: Report
   const summary = generateSummary(t, monthLabel, prevMonthLabel);
 
   return (
-    <>
+    <div className="flex-1 min-h-0 overflow-auto bg-white">
       <style>{`
         @media print {
           .no-print { display: none !important; }
@@ -415,6 +415,6 @@ export function ReportDocument({ data, year, month, clientName, isDemo }: Report
           Data sourced from Meta Graph API · For internal use only
         </div>
       </div>
-    </>
+    </div>
   );
 }
