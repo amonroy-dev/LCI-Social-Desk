@@ -24,13 +24,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import emojiData from "@emoji-mart/data";
 import { cn } from "@/lib/utils";
 
 // Lazy-load emoji picker (large bundle, browser-only)
 const EmojiPicker = dynamic(() => import("@emoji-mart/react"), { ssr: false });
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const emojiData = require("@emoji-mart/data");
 
 interface ComposerToolbarProps {
   onInsertText: (text: string) => void;
