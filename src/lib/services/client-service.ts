@@ -128,6 +128,50 @@ export async function createClient(
   return { client };
 }
 
+export interface UpdateClientInput {
+  name?: string;
+  industry?: string | null;
+  primaryContactName?: string | null;
+  primaryContactEmail?: string | null;
+  website?: string | null;
+  notes?: string | null;
+  accent?: string | null;
+}
+
+export async function updateClient(
+  clientId: string,
+  input: UpdateClientInput,
+): Promise<Client> {
+  const existing = await clientRepository.get(clientId);
+  if (!existing) throw new Error("Client not found.");
+
+  const patch: Partial<Client> = {};
+  if (input.name !== undefined) {
+    const name = input.name.trim();
+    if (!name) throw new Error("Client name is required.");
+    patch.name = name;
+    patch.shortCode = deriveShortCode(name);
+  }
+  if (input.industry !== undefined) patch.industry = input.industry?.trim() || "";
+  if (input.primaryContactName !== undefined) patch.primaryContactName = input.primaryContactName?.trim() || null;
+  if (input.primaryContactEmail !== undefined) {
+    const email = input.primaryContactEmail?.trim() || null;
+    if (email && !isValidEmail(email)) throw new Error("Primary contact email is not a valid address.");
+    patch.primaryContactEmail = email;
+  }
+  if (input.website !== undefined) patch.website = input.website?.trim() || null;
+  if (input.notes !== undefined) patch.notes = input.notes?.trim() || null;
+  if (input.accent !== undefined) {
+    patch.accent = (input.accent && VALID_ACCENT_VALUES.has(input.accent))
+      ? input.accent
+      : existing.accent;
+  }
+
+  const updated = await clientRepository.update(clientId, patch);
+  if (!updated) throw new Error("Update failed.");
+  return updated;
+}
+
 export async function archiveClient(
   clientId: string,
   actor: SessionUser,

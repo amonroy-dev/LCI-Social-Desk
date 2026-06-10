@@ -5,7 +5,9 @@ import {
   archiveClient,
   createClient,
   loadClients,
+  updateClient,
   type CreateClientInput,
+  type UpdateClientInput,
 } from "@/lib/services/client-service";
 
 export const runtime = "nodejs";
@@ -50,6 +52,24 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Could not add client.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  const session = await getCurrentSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const url = new URL(req.url);
+  const clientId = url.searchParams.get("clientId");
+  if (!clientId) return NextResponse.json({ error: "Client ID is required." }, { status: 400 });
+
+  const body = (await req.json().catch(() => ({}))) as Partial<UpdateClientInput>;
+  try {
+    const client = await updateClient(clientId, body);
+    return NextResponse.json({ client });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Could not update client.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

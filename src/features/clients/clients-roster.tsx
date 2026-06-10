@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Archive, ArrowUpRight, Building2, Link2, Plus } from "lucide-react";
+import { Archive, ArrowUpRight, Building2, Link2, Mail, Pencil, Plus, User } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { ClientChip } from "@/features/publishing/components/client-switcher";
 import { AddClientDialog } from "@/features/clients/add-client-dialog";
+import { EditClientDialog } from "@/features/clients/edit-client-dialog";
 import type { Client, SocialConnection } from "@/lib/types";
 
 export interface ClientRosterRow {
@@ -37,6 +38,7 @@ export function ClientsRoster({ rows: initialRows }: ClientsRosterProps) {
   const [archiveDialogOpen, setArchiveDialogOpen] = React.useState(false);
   const [archiveTarget, setArchiveTarget] = React.useState<Client | null>(null);
   const [archiving, setArchiving] = React.useState(false);
+  const [editTarget, setEditTarget] = React.useState<Client | null>(null);
 
   React.useEffect(() => {
     setRows(initialRows);
@@ -53,6 +55,13 @@ export function ClientsRoster({ rows: initialRows }: ClientsRosterProps) {
     // client too (composer switcher, approvals page, etc).
     router.refresh();
     setTimeout(() => setHighlightId(null), 2400);
+  };
+
+  const onUpdated = (updated: Client) => {
+    setRows((prev) =>
+      prev.map((r) => (r.client.id === updated.id ? { ...r, client: updated } : r)),
+    );
+    router.refresh();
   };
 
   const onArchiveClick = (client: Client) => {
@@ -142,30 +151,57 @@ export function ClientsRoster({ rows: initialRows }: ClientsRosterProps) {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <Badge
-                      variant={
-                        fb?.status === "connected" ? "success" : "outline"
-                      }
+                  {/* Contact info */}
+                  {(client.primaryContactName || client.primaryContactEmail) ? (
+                    <div className="space-y-1">
+                      {client.primaryContactName ? (
+                        <div className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+                          <User className="h-3 w-3 shrink-0" />
+                          <span className="truncate">{client.primaryContactName}</span>
+                        </div>
+                      ) : null}
+                      {client.primaryContactEmail ? (
+                        <div className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+                          <Mail className="h-3 w-3 shrink-0" />
+                          <span className="truncate">{client.primaryContactEmail}</span>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setEditTarget(client)}
+                      className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
                     >
+                      <User className="h-3 w-3 shrink-0" />
+                      Add contact info
+                    </button>
+                  )}
+
+                  {/* Network badges */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge variant={fb?.status === "connected" ? "success" : "outline"}>
                       Facebook · {fb?.status ?? "not connected"}
                     </Badge>
-                    <Badge
-                      variant={
-                        ig?.status === "connected" ? "success" : "outline"
-                      }
-                    >
+                    <Badge variant={ig?.status === "connected" ? "success" : "outline"}>
                       Instagram · {ig?.status ?? "not connected"}
                     </Badge>
                   </div>
+
                   <div className="flex items-center justify-between gap-2">
                     <Button asChild variant="outline" size="sm" className="flex-1">
-                      <Link
-                        href={`/dashboard/clients/${client.id}/connections`}
-                      >
+                      <Link href={`/dashboard/clients/${client.id}/connections`}>
                         <Link2 className="h-3.5 w-3.5" />
                         Manage connections
                       </Link>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEditTarget(client)}
+                      title="Edit client"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -195,6 +231,15 @@ export function ClientsRoster({ rows: initialRows }: ClientsRosterProps) {
         onOpenChange={setOpen}
         onCreated={onCreated}
       />
+
+      {editTarget ? (
+        <EditClientDialog
+          open={!!editTarget}
+          onOpenChange={(o) => { if (!o) setEditTarget(null); }}
+          client={editTarget}
+          onUpdated={onUpdated}
+        />
+      ) : null}
 
       <Dialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
         <DialogContent>
