@@ -28,15 +28,14 @@ export function PublishingWorkspace({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="grid min-h-0 flex-1 overflow-hidden grid-cols-1 gap-0 lg:grid-cols-[minmax(0,1.55fr)_minmax(360px,1fr)] xl:grid-cols-[minmax(0,1.7fr)_minmax(380px,1fr)]">
-        <section className="min-w-0 flex min-h-0 flex-col overflow-hidden px-6 pb-2 pt-5 lg:border-r lg:border-border">
-          <div className="flex min-h-0 flex-1 flex-col overflow-auto">
-            <div className="mx-auto flex max-w-3xl flex-col gap-3">
-              <ComposerCard
-                state={state}
-                dispatch={dispatch}
-                clients={clients}
-              />
+      {/* 50/50 two-column split — each column scrolls independently */}
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+
+        {/* ── Left: composer panels ── */}
+        <section className="flex w-1/2 min-h-0 flex-col overflow-hidden border-r border-border">
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-6 py-5">
+            <div className="mx-auto flex max-w-2xl flex-col gap-3">
+              <ComposerCard state={state} dispatch={dispatch} clients={clients} />
               <FirstCommentPanel state={state} dispatch={dispatch} />
               <WorkflowsPanel state={state} dispatch={dispatch} />
               <TagsPanel state={state} dispatch={dispatch} />
@@ -45,12 +44,16 @@ export function PublishingWorkspace({
           </div>
         </section>
 
-        <aside className="min-w-0 flex min-h-0 flex-col overflow-hidden bg-muted/30 px-5 pb-6 pt-5">
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        {/* ── Right: network preview ── */}
+        <aside className="flex w-1/2 min-h-0 flex-col overflow-hidden bg-muted/30">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-5 py-5">
             <PreviewPanel state={state} clients={clients} />
           </div>
         </aside>
+
       </div>
+
+      {/* Action bar — always pinned to bottom of workspace, never overflows sidebar */}
       <ActionBar
         state={state}
         dispatch={dispatch}

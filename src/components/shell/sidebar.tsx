@@ -67,7 +67,7 @@ export function Sidebar({ session }: SidebarProps) {
   const pathname = usePathname() ?? "";
 
   return (
-    <aside className="flex h-screen w-[60px] flex-col items-stretch border-r border-black/40 bg-[hsl(var(--sidebar))] text-[hsl(var(--sidebar-foreground))]">
+    <aside className="flex h-screen w-[60px] shrink-0 flex-col items-stretch overflow-hidden border-r border-black/40 bg-[hsl(var(--sidebar))] text-[hsl(var(--sidebar-foreground))]">
       <div className="flex h-14 items-center justify-center border-b border-white/5">
         <Link
           href="/dashboard/publishing/new"
