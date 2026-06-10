@@ -13,6 +13,8 @@ interface InviteGeneratorProps {
   clientId: string;
   clientName: string;
   emailConfigured: boolean;
+  defaultContactName?: string | null;
+  defaultContactEmail?: string | null;
 }
 
 interface InviteResponse {
@@ -21,9 +23,9 @@ interface InviteResponse {
   sentTo?: string;
 }
 
-export function InviteGenerator({ clientId, clientName, emailConfigured }: InviteGeneratorProps) {
-  const [contactName, setContactName] = React.useState("");
-  const [email, setEmail] = React.useState("");
+export function InviteGenerator({ clientId, clientName, emailConfigured, defaultContactName, defaultContactEmail }: InviteGeneratorProps) {
+  const [contactName, setContactName] = React.useState(defaultContactName ?? "");
+  const [email, setEmail] = React.useState(defaultContactEmail ?? "");
   const [networks, setNetworks] = React.useState<SupportedNetwork[]>([
     "facebook",
     "instagram",
@@ -106,8 +108,8 @@ export function InviteGenerator({ clientId, clientName, emailConfigured }: Invit
   const reset = () => {
     setResult(null);
     setError(null);
-    setEmail("");
-    setContactName("");
+    setEmail(defaultContactEmail ?? "");
+    setContactName(defaultContactName ?? "");
   };
 
   if (result) {

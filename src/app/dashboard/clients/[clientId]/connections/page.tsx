@@ -6,6 +6,7 @@ import { TopBar } from "@/components/shell/top-bar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClientChip } from "@/features/publishing/components/client-switcher";
+import { ClientInfoCard } from "@/features/connections/client-info-card";
 import { ConnectionsView } from "@/features/connections/connections-view";
 import { InviteGenerator } from "@/features/connections/invite-generator";
 import { requireSession } from "@/lib/auth/server";
@@ -82,6 +83,8 @@ export default async function ClientConnectionsPage({ params }: PageProps) {
             </Link>
           </div>
 
+          <ClientInfoCard client={client} />
+
           {!isMetaConfigured() ? (
             <div className="rounded-md border border-amber-200 bg-amber-50/80 px-3 py-2 text-[12px] text-amber-900">
               <span className="font-semibold">Meta credentials not configured.</span>{" "}
@@ -104,19 +107,26 @@ export default async function ClientConnectionsPage({ params }: PageProps) {
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <ShieldCheck className="h-3.5 w-3.5 text-[hsl(var(--brand))]" />
-                  Issue a secure connection invite
+                  Send client a connection link
                 </CardTitle>
                 <Badge variant="outline">
                   Base URL · {baseUrl.replace(/^https?:\/\//, "")}
                 </Badge>
               </div>
               <p className="text-[11.5px] text-muted-foreground">
-                Generate a token-protected link to send the client. Opening the
-                link does not require an LCI Social Desk account.
+                Send the client a secure link so they can connect their own Facebook and
+                Instagram accounts — no LCI Social Desk login required. You paste or email
+                the link; they click it, authorize Meta, and their page is linked automatically.
               </p>
             </CardHeader>
             <CardContent>
-              <InviteGenerator clientId={client.id} clientName={client.name} emailConfigured={isEmailConfigured()} />
+              <InviteGenerator
+                clientId={client.id}
+                clientName={client.name}
+                emailConfigured={isEmailConfigured()}
+                defaultContactName={client.primaryContactName}
+                defaultContactEmail={client.primaryContactEmail}
+              />
             </CardContent>
           </Card>
 
