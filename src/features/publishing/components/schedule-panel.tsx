@@ -235,36 +235,37 @@ export function SchedulePanel({ state, dispatch }: SchedulePanelProps) {
           </div>
 
           {/* Optimal times */}
-          <div className="relative flex flex-col gap-1">
+          <div className="flex flex-col gap-1">
             <span className="invisible text-[11px]">·</span>
-            <button
-              type="button"
-              onClick={() => setOptimalOpen((v) => !v)}
-              className="flex h-8 items-center gap-1 rounded-md px-2 text-[11px] font-medium text-[hsl(var(--brand))] transition-colors hover:bg-[hsl(var(--brand))]/8"
-            >
-              <Sparkles className="h-3 w-3" />
-              Use Optimal Times
-              <ChevronDown
-                className={cn(
-                  "h-3 w-3 transition-transform",
-                  optimalOpen && "rotate-180",
-                )}
-              />
-            </button>
-            {optimalOpen ? (
-              <div className="absolute top-full left-0 z-30 mt-1 w-36 overflow-hidden rounded-md border border-border bg-popover shadow-md">
+            <Popover open={optimalOpen} onOpenChange={setOptimalOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="flex h-8 items-center gap-1 rounded-md px-2 text-[11px] font-medium text-[hsl(var(--brand))] transition-colors hover:bg-[hsl(var(--brand))]/8"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  Use Optimal Times
+                  <ChevronDown
+                    className={cn(
+                      "h-3 w-3 transition-transform",
+                      optimalOpen && "rotate-180",
+                    )}
+                  />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-36 p-1" align="start">
                 {OPTIMAL_TIMES.map((t) => (
                   <button
                     key={t.label}
                     type="button"
                     onClick={() => applyOptimal(t)}
-                    className="flex w-full items-center px-3 py-2 text-left text-[12px] text-foreground transition-colors hover:bg-muted"
+                    className="flex w-full items-center rounded px-3 py-2 text-left text-[12px] text-foreground transition-colors hover:bg-muted"
                   >
                     {t.label}
                   </button>
                 ))}
-              </div>
-            ) : null}
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* Clear */}
