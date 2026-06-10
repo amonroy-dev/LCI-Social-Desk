@@ -6,6 +6,7 @@ import type { Client, ScheduleState } from "@/lib/types";
 import { ComposerCard } from "./components/composer-card";
 import { FirstCommentPanel } from "./components/first-comment-panel";
 import { PreviewPanel } from "./components/preview-panel";
+import { SchedulePanel } from "./components/schedule-panel";
 import { TagsPanel } from "./components/tags-panel";
 import { WorkflowsPanel } from "./components/workflows-panel";
 import { ActionBar } from "./components/action-bar";
@@ -39,6 +40,7 @@ export function PublishingWorkspace({
               <FirstCommentPanel state={state} dispatch={dispatch} />
               <WorkflowsPanel state={state} dispatch={dispatch} />
               <TagsPanel state={state} dispatch={dispatch} />
+              <SchedulePanel state={state} dispatch={dispatch} />
             </div>
           </div>
         </section>

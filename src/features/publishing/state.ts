@@ -18,6 +18,7 @@ export interface ComposerState {
     firstComment: boolean;
     workflows: boolean;
     tags: boolean;
+    schedule: boolean;
   };
 }
 
@@ -66,6 +67,7 @@ export function initialComposerState(
       firstComment: true,
       workflows: false,
       tags: true,
+      schedule: initialSchedule?.date ? true : false,
     },
   };
 }
