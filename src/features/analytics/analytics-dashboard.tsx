@@ -435,7 +435,7 @@ export function AnalyticsDashboard({ clients }: AnalyticsDashboardProps) {
   const videoViews = demoMode ? DEMO_VIDEO_VIEWS : (realData?.videoViews ?? []);
 
   return (
-    <div className="flex flex-col gap-0">
+    <div className="flex-1 min-h-0 overflow-auto">
       {/* ── Toolbar ── */}
       <div className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur-sm px-3 py-3 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -522,7 +522,7 @@ export function AnalyticsDashboard({ clients }: AnalyticsDashboardProps) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto px-3 py-4 space-y-4 sm:px-6 sm:py-5 sm:space-y-5">
+      <div className="px-3 py-4 space-y-4 sm:px-6 sm:py-5 sm:space-y-5">
         {/* Demo mode banner */}
         {demoMode && demoBannerOpen && (
           <div className="flex items-start justify-between gap-3 rounded-lg border border-[hsl(var(--brand))]/20 bg-[hsl(var(--brand-soft))] px-4 py-3">
