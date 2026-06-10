@@ -175,7 +175,14 @@ function PreviewSection({
           )}
         />
       </button>
-      {open ? <div>{children}</div> : null}
+      {open ? (
+        /* Gray panel bg + centered white card — matches Sprout's InlineMessagePreview layout */
+        <div className="bg-muted/40 px-5 py-5">
+          <div className="mx-auto max-w-[360px] overflow-hidden rounded-xl border border-border/50 bg-card shadow-md">
+            {children}
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

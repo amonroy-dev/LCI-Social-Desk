@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Bookmark, Heart, MessageCircle, MoreHorizontal, Send } from "lucide-react";
+import { format } from "date-fns";
+import { Heart, MessageCircle, MoreHorizontal } from "lucide-react";
 
 import { NetworkIcon } from "@/components/network/network-icon";
 import type { Client, MediaAsset } from "@/lib/types";
-import { CaptionParagraph, PreviewAvatar, PreviewMedia } from "./preview-shared";
+import { PreviewAvatar, PreviewMedia } from "./preview-shared";
 
 interface InstagramPreviewProps {
   client: Client;
@@ -19,27 +20,27 @@ export function InstagramPreview({
   media,
 }: InstagramPreviewProps) {
   const hero = media[0];
+  const slug = client.name.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const dateStr = format(new Date(), "MMM d").toUpperCase();
+
   return (
     <div className="overflow-hidden">
-      <header className="flex items-center justify-between px-4 py-2.5">
-        <div className="flex min-w-0 items-center gap-2.5">
+      {/* Header: avatar + username + IG icon + menu */}
+      <header className="flex items-center justify-between px-3 py-2.5">
+        <div className="flex min-w-0 items-center gap-2">
           <PreviewAvatar name={client.name} accent={client.accent} />
-          <div className="flex min-w-0 flex-col leading-tight">
-            <div className="flex items-center gap-1.5">
-              <span className="truncate text-[12.5px] font-semibold text-foreground">
-                {client.name.toLowerCase().replace(/[^a-z0-9]+/g, ".")}
-              </span>
-              <NetworkIcon network="instagram" className="text-muted-foreground" />
-            </div>
-            <span className="text-[11px] text-muted-foreground">
-              {client.industry}
+          <div className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate text-[13px] font-semibold text-foreground">
+              {slug}
             </span>
+            <NetworkIcon network="instagram" className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
         </div>
-        <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+        <MoreHorizontal className="h-4 w-4 shrink-0 text-muted-foreground" />
       </header>
 
-      <div className="aspect-square w-full border-y border-border bg-muted/60">
+      {/* Square media */}
+      <div className="aspect-square w-full bg-muted/60">
         {hero ? (
           <PreviewMedia
             url={hero.url}
@@ -53,21 +54,33 @@ export function InstagramPreview({
         )}
       </div>
 
-      <div className="flex items-center justify-between px-4 py-2 text-muted-foreground">
-        <div className="flex items-center gap-3">
-          <Heart className="h-4 w-4" />
-          <MessageCircle className="h-4 w-4" />
-          <Send className="h-4 w-4" />
-        </div>
-        <Bookmark className="h-4 w-4" />
+      {/* Action icons: Heart + Comment only (Sprout shows just these two) */}
+      <div className="flex items-center gap-3.5 px-3 pt-2.5 pb-1.5 text-foreground">
+        <Heart className="h-[22px] w-[22px]" strokeWidth={1.75} />
+        <MessageCircle className="h-[22px] w-[22px]" strokeWidth={1.75} />
       </div>
 
-      <div className="px-4 pb-3">
-        <p className="mb-1 text-[11.5px] font-medium text-foreground">
-          {Math.max(12, caption.length)} likes
-        </p>
-        <CaptionParagraph text={caption} />
+      {/* Caption: bold username inline + caption text */}
+      <div className="px-3 pb-1">
+        {caption.trim() ? (
+          <p className="text-[13px] leading-relaxed text-foreground">
+            <span className="font-semibold">{slug}</span>
+            {" "}
+            {caption}
+          </p>
+        ) : (
+          <p className="text-[13px] text-muted-foreground/80">
+            <span className="font-semibold text-foreground">{slug}</span>
+            {" "}
+            Your caption will appear here.
+          </p>
+        )}
       </div>
+
+      {/* Date */}
+      <p className="px-3 pb-3 pt-0.5 text-[10.5px] uppercase tracking-wide text-muted-foreground">
+        {dateStr}
+      </p>
     </div>
   );
 }
