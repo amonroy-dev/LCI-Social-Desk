@@ -5,16 +5,14 @@ import {
   BarChart3,
   Calendar,
   CheckCircle2,
-  Megaphone,
   MessageCircle,
-  PenTool,
   Target,
 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Services — LCI Marketing",
   description:
-    "Full-service social media management: strategy, content creation, publishing, community management, analytics, and paid social advertising.",
+    "Boutique social media management: strategy, publishing, community management, and analytics reporting for Facebook and Instagram.",
 };
 
 const SERVICES = [
@@ -34,31 +32,16 @@ const SERVICES = [
     ],
   },
   {
-    id: "content",
-    icon: <PenTool className="h-7 w-7" />,
-    title: "Content Creation",
-    description:
-      "Scroll-stopping content designed for each platform. Our creative team produces on-brand graphics, short-form video, carousel posts, and compelling copy that connects with your audience.",
-    features: [
-      "Custom graphic design and brand templates",
-      "Short-form video production (Reels, TikTok, Shorts)",
-      "Carousel and infographic design",
-      "Copywriting and caption strategy",
-      "UGC curation and repurposing",
-      "Content calendar management",
-    ],
-  },
-  {
     id: "publishing",
     icon: <Calendar className="h-7 w-7" />,
     title: "Publishing & Scheduling",
     description:
-      "Consistent, optimized posting through our proprietary publishing platform. We ensure your content reaches your audience at the right time, on the right platform, every time.",
+      "Consistent, optimized posting through our proprietary publishing platform, LCI Social Desk. We ensure your content reaches your audience at the right time, on the right platform — and you approve everything before it goes live.",
     features: [
       "Proprietary publishing dashboard (LCI Social Desk)",
       "Optimal timing and frequency analysis",
-      "Multi-platform scheduling and cross-posting",
-      "Approval workflows for client review",
+      "Multi-platform scheduling across Facebook and Instagram",
+      "Client approval workflows — review via secure link, no login required",
       "Hashtag strategy and optimization",
       "Holiday and event-based content planning",
     ],
@@ -74,7 +57,7 @@ const SERVICES = [
       "Brand mention monitoring and response",
       "Review management and reputation monitoring",
       "Crisis response and escalation protocols",
-      "Influencer relationship building",
+      "Audience relationship building",
       "Community growth initiatives",
     ],
   },
@@ -83,29 +66,14 @@ const SERVICES = [
     icon: <BarChart3 className="h-7 w-7" />,
     title: "Analytics & Reporting",
     description:
-      "Clear, actionable reporting that shows exactly what's working. We track the metrics that matter and translate data into strategy improvements.",
+      "Clear, actionable reporting that shows exactly what's working. We track the metrics that matter — impressions, engagement, follower growth — and translate the data into plain-English strategy recommendations.",
     features: [
-      "Monthly performance reports with executive summary",
+      "Monthly performance reports with plain-English summary",
       "Custom KPI tracking and goal measurement",
       "Audience growth and engagement analysis",
       "Content performance benchmarking",
-      "Competitor tracking and share of voice",
-      "ROI measurement and attribution",
-    ],
-  },
-  {
-    id: "paid",
-    icon: <Megaphone className="h-7 w-7" />,
-    title: "Paid Social Advertising",
-    description:
-      "Data-driven advertising campaigns across Facebook, Instagram, LinkedIn, and more. We maximize your ad spend with precise targeting, creative testing, and ongoing optimization.",
-    features: [
-      "Campaign strategy and audience targeting",
-      "Ad creative design and copywriting",
-      "A/B testing and performance optimization",
-      "Budget management and ROAS tracking",
-      "Retargeting and lookalike audiences",
-      "Weekly performance reports",
+      "Platform-by-platform breakdown (Facebook & Instagram)",
+      "Transparent reporting — no spin, no vanity metrics",
     ],
   },
 ];
