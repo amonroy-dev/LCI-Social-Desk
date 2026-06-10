@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   BarChart3,
   CalendarDays,
-  Image as ImageIcon,
   LayoutDashboard,
   Send,
   Settings,
@@ -30,7 +29,6 @@ const NAV_ITEMS = [
   { id: "clients", label: "Clients", icon: Users, href: "/dashboard/clients" },
   { id: "calendar", label: "Calendar", icon: CalendarDays, href: "/dashboard/calendar" },
   { id: "publishing", label: "Publishing", icon: Send, href: "/dashboard/publishing/new" },
-  { id: "media", label: "Media Library", icon: ImageIcon, href: "/dashboard/media" },
   { id: "analytics", label: "Analytics", icon: BarChart3, href: "/dashboard/analytics" },
   { id: "settings", label: "Settings", icon: Settings, href: "/dashboard/settings" },
 ] as const;
