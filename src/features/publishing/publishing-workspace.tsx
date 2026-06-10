@@ -27,35 +27,33 @@ export function PublishingWorkspace({
   const [state, dispatch] = useComposer(initialClientId, initialSchedule, initialDraft);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="grid min-h-0 flex-1 overflow-hidden grid-cols-1 gap-0 lg:grid-cols-[minmax(0,1.55fr)_minmax(360px,1fr)] xl:grid-cols-[minmax(0,1.7fr)_minmax(380px,1fr)]">
-        <section className="min-w-0 flex min-h-0 flex-col overflow-hidden px-6 pb-2 pt-5 lg:border-r lg:border-border">
-          <div className="flex min-h-0 flex-1 flex-col overflow-auto">
-            <div className="mx-auto w-full max-w-3xl flex flex-col gap-3">
-              <ComposerCard
-                state={state}
-                dispatch={dispatch}
-                clients={clients}
-              />
-              <FirstCommentPanel state={state} dispatch={dispatch} />
-              <WorkflowsPanel state={state} dispatch={dispatch} />
-              <TagsPanel state={state} dispatch={dispatch} />
-            </div>
+    <div className="grid min-h-0 flex-1 overflow-hidden grid-cols-1 gap-0 lg:grid-cols-[minmax(0,1.55fr)_minmax(360px,1fr)] xl:grid-cols-[minmax(0,1.7fr)_minmax(380px,1fr)]">
+      <section className="min-w-0 flex min-h-0 flex-col overflow-hidden lg:border-r lg:border-border">
+        <div className="flex min-h-0 flex-1 flex-col overflow-auto px-6 pb-2 pt-5">
+          <div className="mx-auto w-full max-w-3xl flex flex-col gap-3">
+            <ComposerCard
+              state={state}
+              dispatch={dispatch}
+              clients={clients}
+            />
+            <FirstCommentPanel state={state} dispatch={dispatch} />
+            <WorkflowsPanel state={state} dispatch={dispatch} />
+            <TagsPanel state={state} dispatch={dispatch} />
           </div>
-        </section>
+        </div>
+        <ActionBar
+          state={state}
+          dispatch={dispatch}
+          clients={clients}
+          emailConfigured={emailConfigured}
+        />
+      </section>
 
-        <aside className="min-w-0 flex min-h-0 flex-col overflow-hidden bg-muted/30 px-5 pb-6 pt-5">
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <PreviewPanel state={state} clients={clients} />
-          </div>
-        </aside>
-      </div>
-      <ActionBar
-        state={state}
-        dispatch={dispatch}
-        clients={clients}
-        emailConfigured={emailConfigured}
-      />
+      <aside className="min-w-0 flex min-h-0 flex-col overflow-hidden bg-muted/30 px-5 pb-6 pt-5">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <PreviewPanel state={state} clients={clients} />
+        </div>
+      </aside>
     </div>
   );
 }
