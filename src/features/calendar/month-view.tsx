@@ -12,7 +12,7 @@ import {
   startOfMonth,
   startOfWeek,
 } from "date-fns";
-import { CalendarClock, Edit3, SquarePen, StickyNote } from "lucide-react";
+import { CalendarClock, Edit3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { Client, SocialPostDraft } from "@/lib/types";
@@ -218,23 +218,6 @@ function DayCell({
             </Button>
           </Link>
 
-          {/* Bottom dashed icon shortcuts */}
-          <div className="flex gap-1.5">
-            <Link
-              href={`/dashboard/publishing/new?date=${dateKey}`}
-              title="Schedule Post"
-              className="flex flex-1 items-center justify-center rounded-md border border-dashed border-border/60 py-2 text-muted-foreground transition-colors hover:border-border hover:bg-muted/30 hover:text-foreground"
-            >
-              <SquarePen className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/dashboard/publishing/new"
-              title="Add Note"
-              className="flex flex-1 items-center justify-center rounded-md border border-dashed border-border/60 py-2 text-muted-foreground transition-colors hover:border-border hover:bg-muted/30 hover:text-foreground"
-            >
-              <StickyNote className="h-4 w-4" />
-            </Link>
-          </div>
         </div>
       ) : null}
     </div>
