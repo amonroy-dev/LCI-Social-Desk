@@ -43,6 +43,83 @@ function buildSummary(t: AnalyticsTotals, monthLabel: string, prevLabel: string)
   ];
 }
 
+// ── Conclusion builder ───────────────────────────────────────────────────────
+
+interface Finding { text: string; positive: boolean }
+
+interface ConclusionData {
+  narrative: string;
+  highlights: Finding[];
+  concerns: Finding[];
+}
+
+function buildConclusion(t: AnalyticsTotals, monthLabel: string): ConclusionData {
+  const highlights: Finding[] = [];
+  const concerns: Finding[] = [];
+
+  // Impressions
+  if (t.impressions.totalChange >= 10) {
+    highlights.push({ positive: true, text: `Impressions grew ${t.impressions.totalChange}% — your content reached significantly more people than last month.` });
+  } else if (t.impressions.totalChange <= -10) {
+    concerns.push({ positive: false, text: `Impressions dropped ${Math.abs(t.impressions.totalChange)}% — content is reaching fewer people. Consider more consistent posting or boosting key posts.` });
+  }
+
+  // Engagements
+  if (t.engagements.totalChange >= 10) {
+    highlights.push({ positive: true, text: `Engagements increased ${t.engagements.totalChange}% — your audience is more actively interacting with your content.` });
+  } else if (t.engagements.totalChange <= -10) {
+    concerns.push({ positive: false, text: `Engagements declined ${Math.abs(t.engagements.totalChange)}% — content may not be resonating as strongly. Try varying formats: polls, questions, short-form video.` });
+  }
+
+  // Facebook engagement rate vs industry benchmark (avg 0.5–1%, good = 1%+)
+  const fbRate = t.engagementRate.facebook;
+  if (fbRate >= 1) {
+    highlights.push({ positive: true, text: `Facebook engagement rate of ${fbRate}% beats the industry average of 0.5–1% — your content is performing above benchmark.` });
+  } else if (fbRate > 0 && fbRate < 0.5) {
+    concerns.push({ positive: false, text: `Facebook engagement rate of ${fbRate}% is below the industry average of 0.5–1%. More interactive content formats (video, polls, stories) typically improve this.` });
+  }
+
+  // Instagram engagement rate vs industry benchmark (avg 1–3%, good = 3%+)
+  const igRate = t.engagementRate.instagram;
+  if (igRate >= 3) {
+    highlights.push({ positive: true, text: `Instagram engagement rate of ${igRate}% exceeds the industry average of 1–3% — strong audience connection on Instagram.` });
+  } else if (igRate > 0 && igRate < 1) {
+    concerns.push({ positive: false, text: `Instagram engagement rate of ${igRate}% is below the industry average of 1–3%. Reels consistently outperform static posts for engagement on this platform.` });
+  }
+
+  // Audience growth
+  if (t.audienceGrowth.total > 0) {
+    highlights.push({ positive: true, text: `Gained ${fmtFull(t.audienceGrowth.total)} net new followers — your audience is growing organically.` });
+  } else if (t.audienceGrowth.total < 0) {
+    concerns.push({ positive: false, text: `Net audience loss of ${fmtFull(Math.abs(t.audienceGrowth.total))} followers this month. Consistent posting and engagement with comments helps retain followers.` });
+  }
+
+  // Video views
+  if (t.videoViews.total > 0 && t.videoViews.totalChange >= 10) {
+    highlights.push({ positive: true, text: `Video views grew ${t.videoViews.totalChange}% — video content is connecting well with your audience.` });
+  } else if (t.videoViews.total > 0 && t.videoViews.totalChange <= -20) {
+    concerns.push({ positive: false, text: `Video views declined ${Math.abs(t.videoViews.totalChange)}%. Publishing more video content — especially short-form Reels — can reverse this trend.` });
+  }
+
+  // Overall narrative based on balance of findings
+  const h = highlights.length;
+  const c = concerns.length;
+  let narrative = "";
+  if (h >= 3 && c <= 1) {
+    narrative = `Overall, ${monthLabel} was a strong month for your social media presence. The majority of key metrics are trending positively, which tells us that your content strategy is working and your audience is engaged. We're sharing these numbers exactly as they are — no spin — because you deserve to see the full picture.`;
+  } else if (h >= 2 && c >= 2) {
+    narrative = `${monthLabel} showed a mixed performance picture with genuine bright spots alongside areas to sharpen. This is normal — social media performance fluctuates month to month based on content mix, algorithm changes, and audience behavior. We've highlighted both what's working and where we can improve.`;
+  } else if (c >= 3) {
+    narrative = `${monthLabel} presented challenges across several key metrics. We believe in full transparency: when numbers dip, you deserve to know exactly what happened and what we recommend doing about it. This report shows every metric as-is, with honest context and actionable next steps.`;
+  } else if (h === 0 && c === 0) {
+    narrative = `${monthLabel} was a steady month — performance held consistent without significant movement in either direction. This is common during periods of regular, stable posting. The data below gives you the complete picture.`;
+  } else {
+    narrative = `${monthLabel} was a solid month with more positives than concerns. Your social media presence continued to build momentum. Below is an honest breakdown of what the numbers mean and where attention should be focused going forward.`;
+  }
+
+  return { narrative, highlights, concerns };
+}
+
 // ── Trend indicator ──────────────────────────────────────────────────────────
 
 function Trend({ v }: { v: number }) {
@@ -503,6 +580,147 @@ export function ReportDocument({ data, year, month, clientName, isDemo }: Report
             { label: "Instagram Video Views", value: t.videoViews.instagram, change: t.videoViews.instagramChange },
           ]}
         />
+
+        {/* ── Page 5: Conclusion ── */}
+        {t !== null && (() => {
+          const conc = buildConclusion(t, monthLabel);
+          return (
+            <div className="rpt-pagebreak">
+              {/* Page header */}
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 4 }}>
+                  Page 5 of 5
+                </div>
+                <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#111827", letterSpacing: "-0.02em" }}>
+                  Understanding Your Report
+                </h2>
+                <p style={{ margin: "6px 0 0", fontSize: 11, color: "#6b7280", lineHeight: 1.5 }}>
+                  Plain-English explanations of every metric, industry benchmarks, and an honest assessment of this month&apos;s performance.
+                </p>
+              </div>
+
+              {/* Overall performance assessment */}
+              <div className="rpt-section" style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: "16px 18px", marginBottom: 20 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#374151", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>
+                  Overall Performance — {monthLabel}
+                </div>
+                <p style={{ margin: 0, fontSize: 11, color: "#374151", lineHeight: 1.7 }}>
+                  {conc.narrative}
+                </p>
+              </div>
+
+              {/* Highlights + Concerns side by side */}
+              <div className="rpt-section" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+                {/* Highlights */}
+                <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: "14px 16px" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#15803d", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>
+                    ✓ What&apos;s Working
+                  </div>
+                  {conc.highlights.length === 0 ? (
+                    <p style={{ margin: 0, fontSize: 11, color: "#6b7280", fontStyle: "italic" }}>No standout positives this month — see areas for attention.</p>
+                  ) : (
+                    <ul style={{ margin: 0, padding: "0 0 0 14px", listStyle: "disc" }}>
+                      {conc.highlights.map((h, i) => (
+                        <li key={i} style={{ fontSize: 11, color: "#166534", lineHeight: 1.6, marginBottom: 5 }}>
+                          {h.text}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                {/* Concerns */}
+                <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "14px 16px" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#92400e", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>
+                    ⚠ Areas for Attention
+                  </div>
+                  {conc.concerns.length === 0 ? (
+                    <p style={{ margin: 0, fontSize: 11, color: "#6b7280", fontStyle: "italic" }}>No significant concerns this month — great work!</p>
+                  ) : (
+                    <ul style={{ margin: 0, padding: "0 0 0 14px", listStyle: "disc" }}>
+                      {conc.concerns.map((c, i) => (
+                        <li key={i} style={{ fontSize: 11, color: "#78350f", lineHeight: 1.6, marginBottom: 5 }}>
+                          {c.text}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+
+              {/* Metric glossary */}
+              <div className="rpt-section" style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#374151", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 12, borderBottom: "1px solid #e5e7eb", paddingBottom: 6 }}>
+                  What These Numbers Mean
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 24px" }}>
+                  {[
+                    {
+                      icon: "📊",
+                      label: "Impressions",
+                      what: "The number of times your content appeared in someone's feed or search results — whether or not they clicked.",
+                      why: "Measures your brand's reach and visibility. More impressions means more people are being exposed to your brand.",
+                      benchmark: "Track month-over-month growth. Consistent upward trends are the goal.",
+                    },
+                    {
+                      icon: "👥",
+                      label: "Engagements",
+                      what: "Total actions taken on your posts: likes, comments, shares, saves, and link clicks.",
+                      why: "Shows whether content is resonating. Each engagement is someone actively choosing to interact with your brand.",
+                      benchmark: "Higher is better. Upward month-over-month trends indicate a healthy, connected audience.",
+                    },
+                    {
+                      icon: "📈",
+                      label: "Engagement Rate",
+                      what: "The percentage of people who saw your content and took an action. Formula: (Engagements ÷ Impressions) × 100.",
+                      why: "The most important quality metric. High impressions with low engagement means content isn't connecting.",
+                      benchmark: "Facebook: avg 0.5–1%, good = 1–3%+. Instagram: avg 1–3%, good = 3–6%+.",
+                    },
+                    {
+                      icon: "👤",
+                      label: "Audience Growth",
+                      what: "Net new followers gained during the period (new followers minus unfollows).",
+                      why: "A growing audience expands your organic reach each month. Every new follower opted in to hear from your brand regularly.",
+                      benchmark: "Any positive number is progress. Consistent growth compounds significantly over time.",
+                    },
+                    {
+                      icon: "🎬",
+                      label: "Video Views",
+                      what: "Number of times video content was played (typically counted after 3+ seconds of viewing).",
+                      why: "Video is the highest-performing format on both Facebook and Instagram. Strong numbers indicate content is capturing attention.",
+                      benchmark: "Upward month-over-month trends. Short-form Reels typically outperform longer video content.",
+                    },
+                  ].map((m) => (
+                    <div key={m.label} style={{ borderLeft: "3px solid #e5e7eb", paddingLeft: 10, marginBottom: 4 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#111827", marginBottom: 2 }}>
+                        {m.icon} {m.label}
+                      </div>
+                      <div style={{ fontSize: 10, color: "#374151", lineHeight: 1.55, marginBottom: 2 }}>
+                        <span style={{ fontWeight: 600 }}>What it is: </span>{m.what}
+                      </div>
+                      <div style={{ fontSize: 10, color: "#374151", lineHeight: 1.55, marginBottom: 2 }}>
+                        <span style={{ fontWeight: 600 }}>Why it matters: </span>{m.why}
+                      </div>
+                      <div style={{ fontSize: 10, color: "#6b7280", lineHeight: 1.55 }}>
+                        <span style={{ fontWeight: 600 }}>Benchmark: </span>{m.benchmark}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Transparency commitment */}
+              <div className="rpt-section" style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 8, padding: "14px 18px" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#1e40af", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 6 }}>
+                  Our Commitment to Transparency
+                </div>
+                <p style={{ margin: 0, fontSize: 11, color: "#1e3a8a", lineHeight: 1.7 }}>
+                  At LCI, we believe you should always know exactly how your social media is performing — the wins and the areas that need work. Every number in this report is real and unaltered. We don&apos;t cherry-pick metrics or hide underperforming figures. Our goal is to give you honest data so we can make smart decisions together and build a social presence your audience genuinely connects with.
+                </p>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Footer */}
         <div style={{ marginTop: 32, paddingTop: 12, borderTop: "1px solid #e5e7eb", fontSize: 10, color: "#9ca3af" }}>
