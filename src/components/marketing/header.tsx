@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
@@ -40,9 +41,13 @@ export function MarketingHeader() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 lg:px-8">
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[hsl(var(--brand))] text-white shadow-sm">
-            <span className="font-mono text-[11px] font-bold tracking-tight">LCI</span>
-          </span>
+          <Image
+            src="/lci-icon.svg"
+            alt="LCI Marketing"
+            width={36}
+            height={36}
+            className="rounded-lg"
+          />
           <div className="leading-tight">
             <div className="text-[15px] font-semibold tracking-tight text-foreground">
               LCI Marketing

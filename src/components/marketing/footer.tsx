@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const FOOTER_NAV = {
@@ -21,9 +22,13 @@ export function MarketingFooter() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[hsl(var(--brand))]/15 text-[hsl(var(--brand))]">
-                <span className="font-mono text-[11px] font-bold tracking-tight">LCI</span>
-              </span>
+              <Image
+                src="/lci-icon.svg"
+                alt="LCI Marketing"
+                width={40}
+                height={40}
+                className="rounded-lg"
+              />
               <span className="text-[15px] font-semibold tracking-tight text-white">
                 LCI Marketing
               </span>
@@ -57,7 +62,12 @@ export function MarketingFooter() {
             &copy; {new Date().getFullYear()} LCI Marketing. All rights reserved.
           </p>
           <div className="flex items-center gap-5 text-[12px] text-white/40">
-            <span>lci-360.com</span>
+            <Link href="/privacy" className="transition-colors hover:text-white/80">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-white/80">
+              Terms of Service
+            </Link>
             <Link
               href="/sign-in"
               className="transition-colors hover:text-white/80"
