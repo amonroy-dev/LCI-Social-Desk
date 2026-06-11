@@ -489,8 +489,8 @@ export function AnalyticsDashboard({ clients }: AnalyticsDashboardProps) {
               <a
                 href={
                   demoMode
-                    ? `/dashboard/analytics/report?demo=true&year=${year}&month=${month + 1}&clientName=Demo`
-                    : `/dashboard/analytics/report?clientId=${encodeURIComponent(selectedClientId)}&year=${year}&month=${month + 1}&clientName=${encodeURIComponent(selectedClient?.name ?? "Client")}`
+                    ? `/report/analytics?demo=true&year=${year}&month=${month + 1}&clientName=Demo`
+                    : `/report/analytics?clientId=${encodeURIComponent(selectedClientId)}&year=${year}&month=${month + 1}&clientName=${encodeURIComponent(selectedClient?.name ?? "Client")}`
                 }
                 target="_blank"
                 rel="noopener noreferrer"
