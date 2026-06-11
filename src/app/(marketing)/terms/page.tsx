@@ -27,7 +27,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-[20px] font-bold tracking-tight mb-3">1. Agreement to Terms</h2>
             <p className="text-muted-foreground">
-              These Terms of Service ("Terms") govern your use of the services provided by LCI 360 LLC, operating as LCI Marketing ("LCI", "we", "our", or "us"), including our website at <strong>lci-360.com</strong> and our proprietary client management platform, LCI Social Desk. By accessing or using our services, you agree to be bound by these Terms.
+              These Terms of Service (&ldquo;Terms&rdquo;) govern your use of the services provided by LCI 360 LLC, operating as LCI Marketing (&ldquo;LCI&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;), including our website at <strong>lci-360.com</strong> and our proprietary client management platform, LCI Social Desk. By accessing or using our services, you agree to be bound by these Terms.
             </p>
             <p className="mt-3 text-muted-foreground">
               If you do not agree to these Terms, you may not use our services.
@@ -66,7 +66,7 @@ export default function TermsPage() {
               <li>Provide accurate and up-to-date information about your business and brand</li>
               <li>Review and approve or reject content submitted for your approval in a timely manner</li>
               <li>Ensure you have the rights to any materials (images, logos, copy) you provide to us for use in content</li>
-              <li>Comply with Meta's Terms of Service and Community Standards for your pages and accounts</li>
+              <li>Comply with Meta&apos;s Terms of Service and Community Standards for your pages and accounts</li>
               <li>Notify us promptly of any changes to your social media accounts or business information</li>
             </ul>
           </section>
@@ -86,10 +86,10 @@ export default function TermsPage() {
             <p className="text-muted-foreground">You may not use our services to:</p>
             <ul className="list-disc pl-5 space-y-1 text-muted-foreground mt-2">
               <li>Publish content that is illegal, deceptive, defamatory, or violates third-party rights</li>
-              <li>Violate Meta's Terms of Service, Community Standards, or advertising policies</li>
-              <li>Attempt to gain unauthorized access to our platform or other clients' accounts</li>
+              <li>Violate Meta&apos;s Terms of Service, Community Standards, or advertising policies</li>
+              <li>Attempt to gain unauthorized access to our platform or other clients&apos; accounts</li>
               <li>Reverse-engineer, copy, or redistribute any part of LCI Social Desk</li>
-              <li>Use our services for any purpose that competes with LCI's business</li>
+              <li>Use our services for any purpose that competes with LCI&apos;s business</li>
             </ul>
           </section>
 
@@ -99,17 +99,17 @@ export default function TermsPage() {
               Payment terms, rates, and billing cycles are defined in your individual service agreement. Invoices are due within the timeframe specified in that agreement. LCI reserves the right to suspend services for accounts with overdue balances.
             </p>
             <p className="mt-3 text-muted-foreground">
-              We operate on a month-to-month basis unless otherwise specified. Either party may terminate services with 30 days' written notice.
+              We operate on a month-to-month basis unless otherwise specified. Either party may terminate services with 30 days&apos; written notice.
             </p>
           </section>
 
           <section>
             <h2 className="text-[20px] font-bold tracking-tight mb-3">8. Disclaimers and Limitation of Liability</h2>
             <p className="text-muted-foreground">
-              LCI provides services on an "as-is" basis. We make no guarantees regarding specific outcomes such as follower counts, engagement rates, or revenue generated from social media activities. Social media performance is influenced by many factors outside our control, including platform algorithm changes.
+              LCI provides services on an &ldquo;as-is&rdquo; basis. We make no guarantees regarding specific outcomes such as follower counts, engagement rates, or revenue generated from social media activities. Social media performance is influenced by many factors outside our control, including platform algorithm changes.
             </p>
             <p className="mt-3 text-muted-foreground">
-              To the maximum extent permitted by law, LCI's liability for any claim arising from our services is limited to the amount paid by you for services in the 30 days preceding the claim. LCI is not liable for indirect, consequential, or incidental damages.
+              To the maximum extent permitted by law, LCI&apos;s liability for any claim arising from our services is limited to the amount paid by you for services in the 30 days preceding the claim. LCI is not liable for indirect, consequential, or incidental damages.
             </p>
           </section>
 
@@ -123,7 +123,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-[20px] font-bold tracking-tight mb-3">10. Termination</h2>
             <p className="text-muted-foreground">
-              Either party may terminate the service relationship with 30 days' written notice. LCI reserves the right to terminate access immediately if you violate these Terms, fail to pay for services, or engage in conduct harmful to LCI or its other clients.
+              Either party may terminate the service relationship with 30 days&apos; written notice. LCI reserves the right to terminate access immediately if you violate these Terms, fail to pay for services, or engage in conduct harmful to LCI or its other clients.
             </p>
             <p className="mt-3 text-muted-foreground">
               Upon termination, LCI will revoke platform access and, upon request, provide you with an export of your analytics data. Meta access tokens will be deauthorized.

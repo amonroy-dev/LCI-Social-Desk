@@ -27,7 +27,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-[20px] font-bold tracking-tight mb-3">1. Overview</h2>
             <p className="text-muted-foreground">
-              LCI Marketing ("LCI", "we", "our", or "us"), operated by LCI 360 LLC, provides social media management services to businesses. This Privacy Policy explains how we collect, use, disclose, and safeguard information when you visit our website (<strong>lci-360.com</strong>), use LCI Social Desk (our proprietary client management platform), or engage with our services.
+              LCI Marketing (&ldquo;LCI&rdquo;, &ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;us&rdquo;), operated by LCI 360 LLC, provides social media management services to businesses. This Privacy Policy explains how we collect, use, disclose, and safeguard information when you visit our website (<strong>lci-360.com</strong>), use LCI Social Desk (our proprietary client management platform), or engage with our services.
             </p>
             <p className="mt-3 text-muted-foreground">
               By using our services, you agree to the collection and use of information as described in this policy. If you do not agree, please discontinue use of our services.
@@ -88,8 +88,8 @@ export default function PrivacyPolicyPage() {
               We do not sell or rent your personal information. We may share your information only in the following limited circumstances:
             </p>
             <ul className="list-disc pl-5 space-y-1 text-muted-foreground mt-2">
-              <li><strong>Service providers:</strong> We use Google Firebase for authentication and data storage. Firebase is governed by Google's Privacy Policy and processes data on our behalf.</li>
-              <li><strong>Meta Platforms:</strong> When publishing content or retrieving analytics, we interact with the Meta Graph API. This use is governed by Meta's Data Policy.</li>
+              <li><strong>Service providers:</strong> We use Google Firebase for authentication and data storage. Firebase is governed by Google&apos;s Privacy Policy and processes data on our behalf.</li>
+              <li><strong>Meta Platforms:</strong> When publishing content or retrieving analytics, we interact with the Meta Graph API. This use is governed by Meta&apos;s Data Policy.</li>
               <li><strong>Legal requirements:</strong> We may disclose information if required by law, court order, or governmental authority.</li>
               <li><strong>Business transfers:</strong> In the event of a merger or acquisition, your information may be transferred to the acquiring entity.</li>
             </ul>
@@ -158,7 +158,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-[20px] font-bold tracking-tight mb-3">11. Changes to This Policy</h2>
             <p className="text-muted-foreground">
-              We may update this Privacy Policy from time to time. When we do, we will revise the "Last updated" date at the top of this page. Continued use of our services after changes are posted constitutes your acceptance of the revised policy.
+              We may update this Privacy Policy from time to time. When we do, we will revise the &ldquo;Last updated&rdquo; date at the top of this page. Continued use of our services after changes are posted constitutes your acceptance of the revised policy.
             </p>
           </section>
 
